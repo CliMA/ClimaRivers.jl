@@ -1,0 +1,2 @@
+using ClimaRivers
+@show("hi")
