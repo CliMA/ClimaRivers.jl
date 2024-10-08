@@ -2,3 +2,6 @@ name = "ClimaRivers"
 uuid = "9363829b-25e6-4e43-a03e-985c67d112e3"
 authors = ["Mauricio Lima, Andrew Chiang, Katherine Deck, Ollie Dunbar"]
 version = "0.1.0"
+
+[compat]
+julia = "1.10"
