@@ -1,7 +1,7 @@
 using SafeTestsets
 # Performance and code quality tests
 @safetestset "Aqua tests" begin
-   # include("aqua.jl")
+    include("aqua.jl")
 end
 
 @safetestset "Fake test" begin
