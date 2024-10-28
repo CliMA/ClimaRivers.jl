@@ -1,4 +1,4 @@
-using Rivers
+using ClimaRivers
 using Dates
 using TOML
 

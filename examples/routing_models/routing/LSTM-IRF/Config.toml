@@ -1,5 +1,5 @@
 [base]
-base = "/central/scratch/mdemoura/Rivers"
+base = "/groups/esm/achiang/ClimaRivers.jl/data"
 
 [level]
 hydro_lv = "05"

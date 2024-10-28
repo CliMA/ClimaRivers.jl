@@ -1,5 +1,5 @@
 [base]
-base = "/groups/esm/achiang/Rivers/data_from_sampo"
+base = "/groups/esm/achiang/ClimaRivers.jl/data"
 
 [level]
 hydro_lv = "05"

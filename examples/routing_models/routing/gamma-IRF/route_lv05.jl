@@ -4,7 +4,6 @@ include("../../../../src/routing/routing.jl")
 
 function main()
     # Unpack config
-    #examples/routing_models/routing/
     config = TOML.parsefile("examples/routing_models/routing/gamma-IRF/Config.toml")
     base = config["base"]["base"]
     hydro_lv = config["level"]["hydro_lv"]
