@@ -9,7 +9,7 @@ using ProgressMeter
 
 Iterates over the `polygons` and finds the one containing the point `(x, y)`.
 """
-function find_polygon(polygons::Vector{Union{Missing, Shapefile.Polygon}}, x::Real, y::Real)
+function find_polygon(polygons::Vector{Union{Missing,Shapefile.Polygon}}, x::Real, y::Real)
     # Iterate over the polygons and find the one containing the point
     for i in eachindex(polygons)
         polygon = polygons[i]
@@ -26,7 +26,11 @@ end
 For basins with no upstreams, the function applies the "max" criteria. For basins with upstreams, verifies if the relative
 difference between `hydro_area` and `grdc_area` is within a specific threshold based on the `hydro_area`.
 """
-function verify_relative_hydro_area(hydro_area::AbstractFloat, grdc_area::AbstractFloat, threshold=0.2::AbstractFloat)
+function verify_relative_hydro_area(
+    hydro_area::AbstractFloat,
+    grdc_area::AbstractFloat,
+    threshold = 0.2::AbstractFloat,
+)
     if hydro_area > grdc_area
         return (hydro_area - grdc_area) / hydro_area <= threshold
     else
@@ -40,7 +44,11 @@ end
 Verifies if the relative difference between `hydro_area` and `grdc_area` is within a specific threshold based on the 
 maximum of the two areas.
 """
-function verify_relative_max_area(hydro_area::AbstractFloat, grdc_area::AbstractFloat, threshold=0.2::AbstractFloat)
+function verify_relative_max_area(
+    hydro_area::AbstractFloat,
+    grdc_area::AbstractFloat,
+    threshold = 0.2::AbstractFloat,
+)
     return abs(hydro_area - grdc_area) / max(hydro_area, grdc_area) <= threshold
 end
 
@@ -70,12 +78,14 @@ If it's set to **"grdc"**, a basin upstream area will be not smaller (whithin th
 the original basin area, but can be bigger (out of the threshold margin in case it has upstreams). This allows more matches and 
 can be useful if routing water in-between basins is considered.
 """
-function gauges_to_basins(nc_file::String, 
-                          shape_file::String, 
-                          output_file::String,
-                          select_best_gauge=true::Bool,
-                          verification_criteria="max"::String,
-                          mapping_dict_file="")
+function gauges_to_basins(
+    nc_file::String,
+    shape_file::String,
+    output_file::String,
+    select_best_gauge = true::Bool,
+    verification_criteria = "max"::String,
+    mapping_dict_file = "",
+)
     # Open the shapefile
     shape_df = Shapefile.Table(shape_file) |> DataFrame
 
@@ -97,61 +107,74 @@ function gauges_to_basins(nc_file::String,
 
     # Create a dictionary to store the assigned points
     if select_best_gauge
-        map_dict = Dict{Int, Tuple{Int, Float64}}()  # {HYBAS_ID: (GAUGE_ID, GAUGE_AREA), ...}
+        map_dict = Dict{Int,Tuple{Int,Float64}}()  # {HYBAS_ID: (GAUGE_ID, GAUGE_AREA), ...}
     else
-        map_dict = Dict{Int, Array{Int}}()  # {HYBAS_ID: [GAUGE_ID, ...], ...}
+        map_dict = Dict{Int,Array{Int}}()  # {HYBAS_ID: [GAUGE_ID, ...], ...}
     end
-    
+
     # Iterate over the selected points
     msg = "Assigning gauges to basins..."
     @showprogress msg for i in eachindex(grdc_ids)
-            x = longitudes[i]
-            y = latitudes[i]
+        x = longitudes[i]
+        y = latitudes[i]
 
-            # Find the polygon containing the point
-            polygon_id = find_polygon(shape_df.geometry, x, y)
+        # Find the polygon containing the point
+        polygon_id = find_polygon(shape_df.geometry, x, y)
 
-            # Add the point to the basin's vector of assigned points
-            if polygon_id != -1
-                # Verfy within verification criteria 
-                if verification_criteria == "max"
-                    verifies = verify_relative_max_area(shape_df[polygon_id, "SUB_AREA"], grdc_areas[i])
-                
-                elseif verification_criteria == "grdc"
-                    # Verify if basin has upstreams
-                    if isempty(graph_dict[string(shape_df[polygon_id, "HYBAS_ID"])])
-                        verifies = verify_relative_max_area(shape_df[polygon_id, "SUB_AREA"], grdc_areas[i])
-                    else
-                        verifies = verify_relative_hydro_area(shape_df[polygon_id, "SUB_AREA"], grdc_areas[i])
-                    end
-                
+        # Add the point to the basin's vector of assigned points
+        if polygon_id != -1
+            # Verfy within verification criteria 
+            if verification_criteria == "max"
+                verifies = verify_relative_max_area(
+                    shape_df[polygon_id, "SUB_AREA"],
+                    grdc_areas[i],
+                )
+
+            elseif verification_criteria == "grdc"
+                # Verify if basin has upstreams
+                if isempty(graph_dict[string(shape_df[polygon_id, "HYBAS_ID"])])
+                    verifies = verify_relative_max_area(
+                        shape_df[polygon_id, "SUB_AREA"],
+                        grdc_areas[i],
+                    )
                 else
-                    error("Verfication criteria not supported. Current supported verificaiton criteria are: 'max', 'grdc'.")
+                    verifies = verify_relative_hydro_area(
+                        shape_df[polygon_id, "SUB_AREA"],
+                        grdc_areas[i],
+                    )
                 end
-                
-                # Add the point if verifies criteria
-                if verifies
-                    if haskey(map_dict, shape_df[polygon_id, "HYBAS_ID"])
-                        if select_best_gauge
-                            if grdc_areas[i] > map_dict[shape_df[polygon_id, "HYBAS_ID"]][2]
-                                map_dict[shape_df[polygon_id, "HYBAS_ID"]] = (grdc_ids[i], grdc_areas[i])
-                            end
-                        else
-                            push!(map_dict[shape_df[polygon_id, "HYBAS_ID"]], grdc_ids[i])
+
+            else
+                error(
+                    "Verfication criteria not supported. Current supported verificaiton criteria are: 'max', 'grdc'.",
+                )
+            end
+
+            # Add the point if verifies criteria
+            if verifies
+                if haskey(map_dict, shape_df[polygon_id, "HYBAS_ID"])
+                    if select_best_gauge
+                        if grdc_areas[i] > map_dict[shape_df[polygon_id, "HYBAS_ID"]][2]
+                            map_dict[shape_df[polygon_id, "HYBAS_ID"]] =
+                                (grdc_ids[i], grdc_areas[i])
                         end
                     else
-                        if select_best_gauge
-                            map_dict[shape_df[polygon_id, "HYBAS_ID"]] = (grdc_ids[i], grdc_areas[i])
-                        else
-                            map_dict[shape_df[polygon_id, "HYBAS_ID"]] = [grdc_ids[i]]
-                        end
+                        push!(map_dict[shape_df[polygon_id, "HYBAS_ID"]], grdc_ids[i])
+                    end
+                else
+                    if select_best_gauge
+                        map_dict[shape_df[polygon_id, "HYBAS_ID"]] =
+                            (grdc_ids[i], grdc_areas[i])
+                    else
+                        map_dict[shape_df[polygon_id, "HYBAS_ID"]] = [grdc_ids[i]]
                     end
                 end
             end
+        end
     end
-    
+
     # Save dictionnary
-    open(output_file,"w") do f
+    open(output_file, "w") do f
         JSON.print(f, map_dict)
     end
 end

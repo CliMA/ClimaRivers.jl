@@ -17,7 +17,12 @@ Merges ERA5 timeseries data for each basin defined by HydroSHEDS with the corres
 - Recomended for the `output_dir` to be of the kind **"path/to/timeseries/timeseries_lvXX"** for a good communication with the model
 (where XX is the level in HydroSHEDS).
 """
-function merge_era5_grdc(timeseries_dir::String, grdc_nc_file::String, basin_gauge_dict_file::String, output_dir::String)
+function merge_era5_grdc(
+    timeseries_dir::String,
+    grdc_nc_file::String,
+    basin_gauge_dict_file::String,
+    output_dir::String,
+)
     # Get a list of all files in the timeseries directory
     basin_files = readdir(timeseries_dir)
 

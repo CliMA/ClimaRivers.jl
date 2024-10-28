@@ -10,9 +10,11 @@ using Statistics
 
 Creates a CSV file containing the attributes from the HydroAtlas shapefile for the specified basins.
 """
-function create_hydroatlas_attributes(hydroatlas_df::DataFrame,
-                                      basins_ids::Vector{Int},
-                                      output_dir::String)
+function create_hydroatlas_attributes(
+    hydroatlas_df::DataFrame,
+    basins_ids::Vector{Int},
+    output_dir::String,
+)
     # Join DataFrames
     attributes_df = hydroatlas_df[findall(in(basins_ids), hydroatlas_df.HYBAS_ID), :]
 
@@ -46,11 +48,13 @@ This function attributes the target attributes in CSV files to each basin for a 
 - Recomended for the `output_dir` to be of the kind **"path/to/attributes/attributes_lvXX"** for a good communication with the model
 (where XX is the level in HydroSHEDS).
 """
-function attribute_attributes(hydroatlas_shapefile::String,
-                              timeseries_dir::String, 
-                              grdc_ncfile::String, 
-                              basin_gauge_dict_file::String,
-                              output_dir::String)
+function attribute_attributes(
+    hydroatlas_shapefile::String,
+    timeseries_dir::String,
+    grdc_ncfile::String,
+    basin_gauge_dict_file::String,
+    output_dir::String,
+)
     # Read Hydro Atlas shapefile
     hydroatlas_df = Shapefile.Table(hydroatlas_shapefile) |> DataFrame
 
@@ -58,7 +62,10 @@ function attribute_attributes(hydroatlas_shapefile::String,
     basin_files = readdir(timeseries_dir)
 
     # Get each basin ID by the file name
-    basin_ids = [parse(Int64, split(basename(basin_file), "_")[end][1:end-4]) for basin_file in basin_files]
+    basin_ids = [
+        parse(Int64, split(basename(basin_file), "_")[end][1:end-4]) for
+        basin_file in basin_files
+    ]
 
     # Read GRDC NetCDF file
     grdc_ds = NCDataset(grdc_ncfile)

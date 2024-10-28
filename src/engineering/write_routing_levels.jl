@@ -5,13 +5,17 @@ using ProgressMeter
 using Shapefile
 using Statistics
 
-function write_routing_level(routing_lv_basins::Array{Int64}, routing_lv::Int64, output_dir::String)
+function write_routing_level(
+    routing_lv_basins::Array{Int64},
+    routing_lv::Int64,
+    output_dir::String,
+)
     # Define file name
-    file_name = joinpath(output_dir, "routing_lv"*lpad(routing_lv, 2, "0")*".txt")
-        
+    file_name = joinpath(output_dir, "routing_lv" * lpad(routing_lv, 2, "0") * ".txt")
+
     # Open the file in write mode
     file = open(file_name, "w")
-    
+
     # Write list of all basin in the same routing level
     for basin_id in routing_lv_basins
         write(file, "$basin_id\n")
@@ -21,7 +25,11 @@ function write_routing_level(routing_lv_basins::Array{Int64}, routing_lv::Int64,
     close(file)
 end
 
-function write_routing_levels(graph_dict_file::String, hydroatlas_shp_file::String, output_dir::String)
+function write_routing_levels(
+    graph_dict_file::String,
+    hydroatlas_shp_file::String,
+    output_dir::String,
+)
     # Read graph
     graph_dict = JSON.parsefile(graph_dict_file)
 
@@ -40,7 +48,7 @@ function write_routing_levels(graph_dict_file::String, hydroatlas_shp_file::Stri
 
     # Get the the source basins
     print("Source basins... ")
-    for basin_id in hydro_df[:,:HYBAS_ID]
+    for basin_id in hydro_df[:, :HYBAS_ID]
         if isempty(graph_dict[string(basin_id)])
             push!(routing_lv_basins, basin_id)
             push!(written_basins, basin_id)
@@ -52,7 +60,7 @@ function write_routing_levels(graph_dict_file::String, hydroatlas_shp_file::Stri
     # Create output directory
     if isdir(output_dir)
         println("\nDeleting old routing levels...")
-        rm(output_dir, recursive=true)
+        rm(output_dir, recursive = true)
     end
     mkpath(output_dir)
 
@@ -87,7 +95,7 @@ function write_routing_levels(graph_dict_file::String, hydroatlas_shp_file::Stri
     end
 
     # Remove unecessary directory
-    rm(joinpath(output_dir, "routing_lv"*lpad(routing_lv, 2, "0")*".txt"))
+    rm(joinpath(output_dir, "routing_lv" * lpad(routing_lv, 2, "0") * ".txt"))
 
     println("Done!")
 end

@@ -17,17 +17,17 @@ function create_graph(shape_file::String, output_file::String)
     df = Shapefile.Table(shape_file) |> DataFrame
 
     # Instantiate graph
-    graph_dict = Dict{Int64, Vector{Int64}}() # HYBAS -> [UP_1, ..., UP_N] # REVIEW TYPES
+    graph_dict = Dict{Int64,Vector{Int64}}() # HYBAS -> [UP_1, ..., UP_N] # REVIEW TYPES
 
     # Iterate over all basins
-    for i in 1:length(df.HYBAS_ID)
+    for i = 1:length(df.HYBAS_ID)
         # Insert the basin in the graph with an empty list for upstreams
         graph_dict[df.HYBAS_ID[i]] = []
     end
 
     # Iterate over all basins
     msg = "Creating graph..."
-    @showprogress msg for i in 1:length(df.HYBAS_ID)
+    @showprogress msg for i = 1:length(df.HYBAS_ID)
         # Check if downstream exists in the graph
         if df.NEXT_DOWN[i] != 0
             # Add basin to the list of upstreams
@@ -39,7 +39,7 @@ function create_graph(shape_file::String, output_file::String)
     mkpath(dirname(output_file))
 
     # Save dictionnary
-    open(output_file,"w") do f
+    open(output_file, "w") do f
         JSON.print(f, graph_dict)
     end
 end

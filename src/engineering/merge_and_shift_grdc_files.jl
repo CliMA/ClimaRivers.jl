@@ -6,7 +6,7 @@ using ProgressMeter
     insert_array!(insert_array, main_array, last_idx)
 """
 function insert_array!(insert_array::Vector, main_array::Vector, last_idx::Int)
-    main_array[last_idx+1 : last_idx+length(insert_array)] = insert_array
+    main_array[last_idx+1:last_idx+length(insert_array)] = insert_array
 end
 
 """
@@ -14,9 +14,14 @@ end
 Merge and shift GRDC netCDF files that are in local time to UTC and saves a new netCDF file. 
 Some fields are not transferred.
 """
-function merge_and_shift_grdc_files(input_dir::String, output_file::String, initial_year::Int, final_year::Int)
+function merge_and_shift_grdc_files(
+    input_dir::String,
+    output_file::String,
+    initial_year::Int,
+    final_year::Int,
+)
     # Get a list of all NetCDF files in the directory
-    files = filter(f -> endswith(f, ".nc"), readdir(input_dir, join=true))
+    files = filter(f -> endswith(f, ".nc"), readdir(input_dir, join = true))
 
     # Open the first file to serve as the base for merging
     base_dataset = Dataset(files[1], "r")
@@ -24,11 +29,11 @@ function merge_and_shift_grdc_files(input_dir::String, output_file::String, init
     # Get initial and final date
     min_date = Date(initial_year, 1, 1)
     max_date = Date(final_year, 12, 31)
-    
+
     # Find NetCDF corresponding index
     min_date_idx = findfirst(date -> date == min_date, base_dataset["time"][:])
     max_date_idx = findfirst(date -> date == max_date, base_dataset["time"][:])
-    
+
     # Create dates array to serve as dimension for the new Dataset
     dates = base_dataset["time"][min_date_idx-1:max_date_idx]
 
@@ -42,7 +47,7 @@ function merge_and_shift_grdc_files(input_dir::String, output_file::String, init
 
     # Create array to store:
     # shifted streamflow data for one given gauge
-    streamflows = Matrix{Union{Missing, Float32}}(missing, num_gauges, length(dates))
+    streamflows = Matrix{Union{Missing,Float32}}(missing, num_gauges, length(dates))
     # gauge ids
     gauge_ids = Vector{Int32}(undef, num_gauges)
     # areas
@@ -66,7 +71,7 @@ function merge_and_shift_grdc_files(input_dir::String, output_file::String, init
         ds = Dataset(file, "r")
 
         file_timezones = ds["timezone"][:]
-        file_streamflows = ds["runoff_mean"][:,:]
+        file_streamflows = ds["runoff_mean"][:, :]
 
         # Find NetCDF corresponding index
         min_date_idx = findfirst(date -> date == min_date, ds["time"][:])
@@ -84,10 +89,14 @@ function merge_and_shift_grdc_files(input_dir::String, output_file::String, init
         # Shift and add streamflows
         for i in eachindex(ds["id"][:])
             streamflows[i, 1] = missing
-            for t in min_date_idx:max_date_idx
-                if !ismissing(file_streamflows[i,t])
+            for t = min_date_idx:max_date_idx
+                if !ismissing(file_streamflows[i, t])
                     # Shift streamflow
-                    streamflows[last_idx+i, t-min_date_idx+2] = (file_streamflows[i,t-1]*file_timezones[i] + file_streamflows[i,t]*(24-file_timezones[i])) / 24
+                    streamflows[last_idx+i, t-min_date_idx+2] =
+                        (
+                            file_streamflows[i, t-1] * file_timezones[i] +
+                            file_streamflows[i, t] * (24 - file_timezones[i])
+                        ) / 24
                 end
             end
             next!(prog)
@@ -123,7 +132,13 @@ function merge_and_shift_grdc_files(input_dir::String, output_file::String, init
     defVar(output_dataset, "date", dates, ("date",))
 
     # Create a streamflow variable
-    defVar(output_dataset, "streamflow", streamflows, ("gauge_id", "date",), fillvalue=-999.0)
+    defVar(
+        output_dataset,
+        "streamflow",
+        streamflows,
+        ("gauge_id", "date"),
+        fillvalue = -999.0,
+    )
 
     # Add variables
     defVar(output_dataset, "area", areas, ("gauge_id",))

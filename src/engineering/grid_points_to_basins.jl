@@ -13,8 +13,8 @@ function subdivide_dataframe(df::DataFrame, num_parts::Int)
     # Subdivide the DataFrame into equal parts
     subdivisions = []
     start_idx = 1
-    for i in 1:(num_parts-1)
-        end_idx = start_idx + part_size - 1 + (remainder!=0)
+    for i = 1:(num_parts-1)
+        end_idx = start_idx + part_size - 1 + (remainder != 0)
         push!(subdivisions, df[start_idx:end_idx, :])
         start_idx = end_idx + 1
     end
@@ -36,14 +36,16 @@ end
 @everywhere """
     grid_points_to_basins(nc_file, shp_file, basin_id_field, output_file, do_monte_carlo=true, num_mc_exp=1000)
 """
-function grid_points_to_basins_in_parallel(nc_file::String, 
-                                           shape_df::DataFrame,
-                                           basin_id_field::String,
-                                           output_file::String,
-                                           do_monte_carlo=true::Bool,
-                                           num_mc_exp=1000::Int)
+function grid_points_to_basins_in_parallel(
+    nc_file::String,
+    shape_df::DataFrame,
+    basin_id_field::String,
+    output_file::String,
+    do_monte_carlo = true::Bool,
+    num_mc_exp = 1000::Int,
+)
     # Create a dictionary to store the assigned points indexes and its weights
-    map_dict = Dict{Int, Vector{Tuple{Int, Int, AbstractFloat}}}()
+    map_dict = Dict{Int,Vector{Tuple{Int,Int,AbstractFloat}}}()
 
     # Read the netCDF file
     dataset = NetCDF.open(nc_file)
@@ -54,7 +56,7 @@ function grid_points_to_basins_in_parallel(nc_file::String,
     # Define constants for the Monte Carlo Experiments
     mc_proba = 1 / num_mc_exp
     std_dev = abs(longitudes[2] - longitudes[1]) / 2
-    
+
     # Margin for the bounding box
     bb_margin = longitudes[2] - longitudes[1]
 
@@ -64,13 +66,15 @@ function grid_points_to_basins_in_parallel(nc_file::String,
         polygon_points = row.geometry.points
 
         # Get the minima and maxima latitude and longitude of the polygon
-        min_longitude, max_longitude, min_latitude, max_latitude = find_min_max_lon_lat(polygon_points, bb_margin)
-        
+        min_longitude, max_longitude, min_latitude, max_latitude =
+            find_min_max_lon_lat(polygon_points, bb_margin)
+
         # Longitude indices within the polygon's range
-        longitude_indices = find_indices_within_range(longitudes, min_longitude, max_longitude)
+        longitude_indices =
+            find_indices_within_range(longitudes, min_longitude, max_longitude)
         # Latitude indices within the polygon's range
         latitude_indices = find_indices_within_range(latitudes, min_latitude, max_latitude)
-        
+
         # Add the polygon to the dictionary
         polygon_id = row[basin_id_field]
         push!(map_dict, polygon_id => [])
@@ -82,7 +86,7 @@ function grid_points_to_basins_in_parallel(nc_file::String,
             if do_monte_carlo
                 proba = 0
                 # Perform Monte Carlo simulation
-                for _ in 1:num_mc_exp
+                for _ = 1:num_mc_exp
                     longitude = longitudes[i] + randn() * std_dev
                     latitude = latitudes[j] + randn() * std_dev
                     # Check if the point is inside the polygon
@@ -94,7 +98,7 @@ function grid_points_to_basins_in_parallel(nc_file::String,
                     # Add the point to the basin's matrix of assigned points
                     push!(map_dict[polygon_id], (i, j, proba))
                 end
-            # No Monte Carlo option
+                # No Monte Carlo option
             else
                 longitude = longitudes[i]
                 latitude = latitudes[j]
@@ -130,13 +134,15 @@ Reads a netCDF file and assigns grid points within polygons from a shapefile to 
 - Saves a a set of dictionaries with the assigned points to the output directory in JSON format.
 - Common usage: **"path/to/grid_to_basin_dict_lvXX"** where "XX" is the level in HydroSHEDS.
 """
-function grid_points_to_basins(nc_file::String, 
-                               shp_file::String,
-                               basin_id_field::String,
-                               output_dir::String,
-                               do_monte_carlo=true::Bool,
-                               num_mc_exp=1000::Int,
-                               num_parts=Sys.CPU_THREADS::Int)
+function grid_points_to_basins(
+    nc_file::String,
+    shp_file::String,
+    basin_id_field::String,
+    output_dir::String,
+    do_monte_carlo = true::Bool,
+    num_mc_exp = 1000::Int,
+    num_parts = Sys.CPU_THREADS::Int,
+)
     # Open the shapefile in DataFrame format
     shape_df = Shapefile.Table(shp_file) |> DataFrame
 
@@ -148,8 +154,15 @@ function grid_points_to_basins(nc_file::String,
 
     # Wrapper function 
     function grid_points_to_basins_in_parallel_wrapper(i)
-        output_file = joinpath(output_dir, "dict" * lpad(i,2,"0") * ".json")
-        grid_points_to_basins_in_parallel(nc_file, subdivisions[i], basin_id_field, output_file, do_monte_carlo, num_mc_exp)
+        output_file = joinpath(output_dir, "dict" * lpad(i, 2, "0") * ".json")
+        grid_points_to_basins_in_parallel(
+            nc_file,
+            subdivisions[i],
+            basin_id_field,
+            output_file,
+            do_monte_carlo,
+            num_mc_exp,
+        )
     end
 
     # Create direcoty

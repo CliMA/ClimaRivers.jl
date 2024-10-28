@@ -6,7 +6,7 @@ Finds the durations between consecutive indices in the given vector.
 function find_durations(idx::Vector{Int})
     durations = []
     duration = 1
-    for i in 2:length(idx)
+    for i = 2:length(idx)
         if idx[i] - idx[i-1] == 1
             duration += 1
         else
@@ -24,15 +24,17 @@ end
 
 Creates a CSV file containing ERA5 attributes for the specified basins.
 """
-function create_era5_attributes(timeseries_dir::String,
-                                basin_files::Vector{String},
-                                basin_ids::Vector{Int},
-                                output_dir::String)
+function create_era5_attributes(
+    timeseries_dir::String,
+    basin_files::Vector{String},
+    basin_ids::Vector{Int},
+    output_dir::String,
+)
 
     # Get length of a DataFrame
     basin_df = CSV.read(joinpath(timeseries_dir, basin_files[1]), DataFrame)
     len = length(basin_files)
-    
+
     # Create vectors to store attributes for each basin
     mean_precips = Vector{Float64}(undef, len)
     high_precip_freqs = Vector{Float64}(undef, len)
@@ -49,16 +51,17 @@ function create_era5_attributes(timeseries_dir::String,
         mean_precips[i] = mean(basin_df.tp_sum)
 
         # High precipitation frequency
-        high_precip_freqs[i] = sum(basin_df.tp_sum .>= 5*mean_precips[i]) / size(basin_df, 1)
+        high_precip_freqs[i] =
+            sum(basin_df.tp_sum .>= 5 * mean_precips[i]) / size(basin_df, 1)
 
         # Low precipitation frequency (this 1mm value seems to be so arbitrary...)
         low_precip_freqs[i] = sum(basin_df.tp_sum .< 0.001) / size(basin_df, 1)
 
         # # High recipitation duration
-        idx = findall(basin_df.tp_sum .>= 5*mean_precips[i])
+        idx = findall(basin_df.tp_sum .>= 5 * mean_precips[i])
         durations = find_durations(idx)
         high_prec_durs[i] = mean(durations)
-        
+
         # Low recipitation duration
         idx = findall(basin_df.tp_sum .< 0.001)
         durations = find_durations(idx)
@@ -66,12 +69,14 @@ function create_era5_attributes(timeseries_dir::String,
     end
 
     # Create DataFrame
-    attributes_df = DataFrame(basin_id = basin_ids,
-                              mean_precip = mean_precips,
-                              high_precip_freq = high_precip_freqs,
-                              low_precip_freq = low_precip_freqs,
-                              high_prec_dur = high_prec_durs,
-                              low_precip_dur = low_precip_durs)
+    attributes_df = DataFrame(
+        basin_id = basin_ids,
+        mean_precip = mean_precips,
+        high_precip_freq = high_precip_freqs,
+        low_precip_freq = low_precip_freqs,
+        high_prec_dur = high_prec_durs,
+        low_precip_dur = low_precip_durs,
+    )
 
     # Sort
     sort!(attributes_df)
@@ -86,10 +91,12 @@ end
 Creates a CSV file containing other attributes (currently just area) for the specified basins.
 """
 
-function create_other_attributes(grdc_ds::NCDataset,
-                                 basin_ids::Vector{Int},
-                                 basin_gauge_dict::Dict{},
-                                 output_dir::String)
+function create_other_attributes(
+    grdc_ds::NCDataset,
+    basin_ids::Vector{Int},
+    basin_gauge_dict::Dict{},
+    output_dir::String,
+)
 
     # Get areas
     complete_areas = grdc_ds["area"][:]
@@ -100,7 +107,7 @@ function create_other_attributes(grdc_ds::NCDataset,
     # Get logitude and latitude
     complete_longitudes = grdc_ds["geo_x"][:]
     complete_latitudes = grdc_ds["geo_y"][:]
-    
+
     # Get grdc IDs
     gauge_ids = grdc_ds["gauge_id"][:]
 
@@ -113,7 +120,7 @@ function create_other_attributes(grdc_ds::NCDataset,
     for (i, basin_id) in enumerate(basin_ids)
         # Get gauge ID
         gauge_id = basin_gauge_dict[string(basin_id)][1]
-        
+
         # Find its index in dataset
         grdc_idx = findfirst(id -> id == gauge_id, gauge_ids)
 
@@ -130,11 +137,12 @@ function create_other_attributes(grdc_ds::NCDataset,
 
     # Create DataFrame
     attributes_df = DataFrame(
-        basin_id = basin_ids, 
-        area = selected_areas, 
+        basin_id = basin_ids,
+        area = selected_areas,
         country = selected_countries,
         longitude = selected_longitudes,
-        latitude = selected_latitudes)
+        latitude = selected_latitudes,
+    )
 
     # Sort
     sort!(attributes_df)

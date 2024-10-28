@@ -5,12 +5,12 @@ using JSON
 using NCDatasets
 
 function write_routing_timeseries(
-    xd_dir::String, 
-    start_date::Date, 
+    xd_dir::String,
+    start_date::Date,
     end_date::Date,
-    grdc_nc_file::String, 
+    grdc_nc_file::String,
     basin_gauge_dict_file::String,
-    output_dir::String
+    output_dir::String,
 )
     # Create directory
     mkpath(output_dir)
@@ -23,19 +23,19 @@ function write_routing_timeseries(
     # Find NetCDF corresponding index
     start_idx = findfirst(date -> date == start_date, dates)
     end_idx = findfirst(date -> date == end_date, dates)
-    
+
     # Read matching dictionary
     basin_gauge_dict = JSON.parsefile(basin_gauge_dict_file)
 
     # Allocate streamflow array
-    streamflows = Vector{Float64}(undef, end_idx-start_idx+1)
-    
+    streamflows = Vector{Float64}(undef, end_idx - start_idx + 1)
+
     # Iterate over all files
     msg = "Writing new timeseries files"
     @showprogress msg for basin_file in readdir(xd_dir)
         # Read file as DataFrame
         df = CSV.read(joinpath(xd_dir, basin_file), DataFrame)
-        
+
         # Filter the DataFrame between start_date and end_date
         df = filter(row -> start_date <= row.date <= end_date, df)
 
@@ -57,11 +57,11 @@ function write_routing_timeseries(
             streamflows = replace(streamflows, missing => NaN)
         else
             # Write an array of NaN values
-            streamflows = fill(NaN, end_idx-start_idx+1)
+            streamflows = fill(NaN, end_idx - start_idx + 1)
         end
 
         # Write streamflow in DataFrame
-        df[!,:streamflow] = streamflows
+        df[!, :streamflow] = streamflows
 
         # Save file in new dedicated folder
         CSV.write(joinpath(output_dir, basin_file), df)

@@ -7,19 +7,19 @@ function has_at_least_one_year_data(df::DataFrame, initial_year, final_year)
 
     # Find corresponding indexes
     start_date_idx = findfirst(df[:, :date] .== start_date)
-    end_date_idx  = findfirst(df[:, :date] .== end_date)
+    end_date_idx = findfirst(df[:, :date] .== end_date)
 
     # Check if there's at least one consecutive year of valid data
     i = start_date_idx
-    for j in start_date_idx:end_date_idx
-       if !isnan(df[j, :streamflow])
+    for j = start_date_idx:end_date_idx
+        if !isnan(df[j, :streamflow])
             if isnan(df[i, :streamflow])
                 i = j
             elseif (j - i) == 365
                 return true
             end
-       end
-       j += 1
+        end
+        j += 1
     end
     return false
 end
@@ -90,7 +90,7 @@ function extract_basin_lists(
                 push!(globe_time_split_list, basin_id)
 
                 # Check if it's also in the USA
-                if attributes_df[attributes_df.basin_id .== basin_id, :country][1] == "US"
+                if attributes_df[attributes_df.basin_id.==basin_id, :country][1] == "US"
                     push!(usa_time_split_list, basin_id)
                 end
             end
@@ -106,7 +106,8 @@ function extract_basin_lists(
     end
     close(file)
 
-    usa_basin_split_train_list, usa_basin_split_test_list = split_train_test(usa_time_split_list, 0.75)
+    usa_basin_split_train_list, usa_basin_split_test_list =
+        split_train_test(usa_time_split_list, 0.75)
 
     # Write USA - basin split (train set) 
     file = open(joinpath(output_dir, "usa_basin_split_train_list.txt"), "w")
@@ -120,7 +121,7 @@ function extract_basin_lists(
     for basin_id in usa_basin_split_test_list
         write(file, "$basin_id\n")
     end
-    close(file) 
+    close(file)
 
     # Write Globe - time split 
     file = open(joinpath(output_dir, "globe_time_split_list.txt"), "w")
@@ -129,7 +130,8 @@ function extract_basin_lists(
     end
     close(file)
 
-    globe_basin_split_train_list, globe_basin_split_test_list = split_train_test(globe_time_split_list, 0.75)
+    globe_basin_split_train_list, globe_basin_split_test_list =
+        split_train_test(globe_time_split_list, 0.75)
 
     # Write Globe - basin split (train set) 
     file = open(joinpath(output_dir, "globe_basin_split_train_list.txt"), "w")

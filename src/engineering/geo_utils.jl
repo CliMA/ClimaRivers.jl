@@ -11,7 +11,7 @@ function in_polygon(vertices::Vector{Shapefile.Point}, x::Real, y::Real)
     n = length(vertices)
     inside = false
     j = n
-    for i in 1:n
+    for i = 1:n
         xi = vertices[i].x
         yi = vertices[i].y
         xj = vertices[j].x
@@ -35,8 +35,10 @@ function find_min_max_lon_lat(points::Vector{Shapefile.Point}, margin::Real)
     polygon_longitudes = [point.x for point in points]
     polygon_latitudes = [point.y for point in points]
 
-    return minimum(polygon_longitudes) - margin, maximum(polygon_longitudes) + margin,
-           minimum(polygon_latitudes) - margin, maximum(polygon_latitudes) + margin
+    return minimum(polygon_longitudes) - margin,
+    maximum(polygon_longitudes) + margin,
+    minimum(polygon_latitudes) - margin,
+    maximum(polygon_latitudes) + margin
 end
 
 """
@@ -45,9 +47,9 @@ end
 Transforms an array of longitudes to the [-180,180] limit range.
 """
 function standard_longitudes!(longitudes::Vector{<:Real})
-    for i in 1:length(longitudes)
+    for i = 1:length(longitudes)
         if longitudes[i] > 180
-          longitudes[i] -= 360
+            longitudes[i] -= 360
         end
-      end
+    end
 end

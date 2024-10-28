@@ -17,7 +17,12 @@ function is_valid(basin_id::AbstractString, graph_dict::Dict, basin_gauge_dict::
     return true
 end
 
-function get_streamflow(basin_id::AbstractString, basin_gauge_dict::Dict, grdc_ds::NCDataset, gauge_ids::Vector{Int32})::Vector{<:Real}
+function get_streamflow(
+    basin_id::AbstractString,
+    basin_gauge_dict::Dict,
+    grdc_ds::NCDataset,
+    gauge_ids::Vector{Int32},
+)::Vector{<:Real}
     # Get gauge id to the corresponding basin
     gauge_id = basin_gauge_dict[basin_id][1]
 
@@ -49,12 +54,14 @@ Merges ERA5 timeseries data for each basin defined by HydroSHEDS with the corres
 - Recomended for the `output_dir` to be of the kind **"path/to/timeseries/timeseries_lvXX"** for a good communication with the model
 (where XX is the level in HydroSHEDS).
 """
-function merge_era5_grdc(timeseries_dir::String, 
-                         grdc_nc_file::String, 
-                         basin_gauge_dict_file::String, 
-                         graph_dict_file::String,
-                         shape_file,
-                         output_dir::String)
+function merge_era5_grdc(
+    timeseries_dir::String,
+    grdc_nc_file::String,
+    basin_gauge_dict_file::String,
+    graph_dict_file::String,
+    shape_file,
+    output_dir::String,
+)
     # Get a list of all files in the timeseries directory
     basin_files = readdir(timeseries_dir)
 
@@ -62,7 +69,7 @@ function merge_era5_grdc(timeseries_dir::String,
     grdc_ds = NCDataset(grdc_nc_file)
     gauge_ids = grdc_ds["gauge_id"][:]
     dates = grdc_ds["date"][:]
-    
+
     # Read matching dictionary
     basin_gauge_dict = JSON.parsefile(basin_gauge_dict_file)
 
@@ -87,25 +94,30 @@ function merge_era5_grdc(timeseries_dir::String,
     @showprogress msg for basin_file in basin_files
         basin_id = split(basename(basin_file), "_")[end][1:end-4]
         basin_df = CSV.read(joinpath(timeseries_dir, basin_file), DataFrame)
-    
+
         # Check if the basin id exists in the basin_gauge_dictionary
         if is_valid(basin_id, graph_dict, basin_gauge_dict)
             # Get streamflow timeseries
             streamflow = get_streamflow(basin_id, basin_gauge_dict, grdc_ds, gauge_ids)
-            
+
             # Add the streamflow values to the basin data
             basin_df[!, "streamflow"] = streamflow[min_date_idx:max_date_idx]
 
             # Add upstream (sum and pond)
-            down_dist = shape_df[shape_df.HYBAS_ID .== parse(Int, basin_id), :DIST_MAIN][1]
-            pond_upstream = zeros(max_date_idx-min_date_idx+1)
-            upstream = zeros(max_date_idx-min_date_idx+1)
+            down_dist = shape_df[shape_df.HYBAS_ID.==parse(Int, basin_id), :DIST_MAIN][1]
+            pond_upstream = zeros(max_date_idx - min_date_idx + 1)
+            upstream = zeros(max_date_idx - min_date_idx + 1)
             dist_sum = 0
             if !isempty(graph_dict[basin_id])
                 for up_basin in graph_dict[basin_id]
-                    up_dist = shape_df[shape_df.HYBAS_ID .== up_basin, :DIST_MAIN][1]
+                    up_dist = shape_df[shape_df.HYBAS_ID.==up_basin, :DIST_MAIN][1]
                     dist = down_dist - up_dist
-                    streamflow = get_streamflow(string(up_basin), basin_gauge_dict, grdc_ds, gauge_ids)[min_date_idx:max_date_idx]
+                    streamflow = get_streamflow(
+                        string(up_basin),
+                        basin_gauge_dict,
+                        grdc_ds,
+                        gauge_ids,
+                    )[min_date_idx:max_date_idx]
                     upstream += streamflow
                     pond_upstream += streamflow * dist
                     dist_sum += dist
