@@ -4,6 +4,6 @@ using SafeTestsets
     include("aqua.jl")
 end
 
-@safetestset "Fake test" begin
-    include("fake_test.jl")
+@safetestset "Hillslope channel model tests" begin
+    include("hillslope_channel_model.jl")
 end
