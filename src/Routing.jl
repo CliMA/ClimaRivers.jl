@@ -39,20 +39,6 @@ function update_state!(
     )
 end
 
-# Auxiliary function
-## function for reading basins from txt file into Vector{Int}
-# function get_basin_list(basins_file::String)
-#     basins_file = Int64[]
-#     file = open(joinpath(basins_file))
-#     for line in eachline(file)
-#         push!(basins_file, parse(Int64, line))
-#     end
-#     close(file)
-
-#     return basins_file
-# end
-
-# only for one routing lv
 function update_state_from_hillslope!(
     river_state::RS,
     hillslope_model::HM,
@@ -67,7 +53,7 @@ function update_state_from_hillslope!(
     day_to_s = 86400
     km²_to_m² = 1000000
 
-    forcing_timeseries_dir = dynamic_env.forcing_timeseries_dir
+    forcing_timeseries = dynamic_env.forcing_timeseries
     output_dir = dynamic_env.output_dir
     dates = collect(start_date:Day(1):end_date)
 
@@ -82,12 +68,8 @@ function update_state_from_hillslope!(
         t in 0:(t_max - 1)
     ]
 
-
     for basin_id in all_basin_ids
-        timeseries_df = CSV.read(
-            joinpath(forcing_timeseries_dir, "basin_$basin_id.csv"),
-            DataFrame,
-        )
+        timeseries_df = forcing_timeseries[basin_id]
         filtered_df =
             filter(row -> start_date <= row[:date] <= end_date, timeseries_df)
         basin_area =
@@ -163,7 +145,6 @@ function update_state_from_channel!(
     km_to_m = 1e3
 
     output_dir = dynamic_env.output_dir
-    forcing_timeseries_dir = dynamic_env.forcing_timeseries_dir
 
     graph_dict = static_env.graph_dict
     all_basin_ids = static_env.basin_ids

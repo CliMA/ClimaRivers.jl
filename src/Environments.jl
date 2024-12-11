@@ -22,7 +22,7 @@ struct StaticEnvironment{AV <: AbstractVector}
     basin_ids::AV
     "Data frame of static basin attributes"
     attributes::DataFrame
-    "Dictionary representing the network (basin_id => direct upstream neighbours)"
+    "Dictionary of pairs (basin_id => basin_ids of direct upstream neighbours)"
     graph_dict::Dict
 end
 
@@ -50,13 +50,26 @@ end
 
 # Dynamic Data Objects
 struct DynamicEnvironment
-    "Directory containing forcing timeseries csv"
-    forcing_timeseries_dir::String
+    "Dictionary of pairs (basin_id => forcing timeseries at basin_id)"
+    forcing_timeseries::Dict
     "Directory to store simulation results"
     output_dir::String
 end
 
+function DynamicEnvironment(basin_ids::AV1, forcing_timeseries_files::AV2, output_dir) where {AV1 <: AbstractVector, AV2 <: AbstractVector}
+        
+    # build forcing timeseries
+    forcing_timeseries_array = [] 
+    for file in forcing_timeseries_files
+        push!(
+            forcing_timeseries_array,
+            CSV.read(file, DataFrame),
+        )
+    end
+    forcing_timeseries = Dict(eachrow([basin_ids forcing_timeseries_array])) # creates id => timeseries dictionary
 
+    return DynamicEnvironment(forcing_timeseries, output_dir)
+end
 
 
 struct Environment{SE <: StaticEnvironment, DE <: DynamicEnvironment}

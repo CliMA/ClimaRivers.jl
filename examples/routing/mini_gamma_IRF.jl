@@ -23,13 +23,14 @@ static_env = StaticEnvironment(basin_id_file, attributes_file, graph_file)
 # build dynamic environment
 forcing_timeseries_dir =
     joinpath(data_file_path, "timeseries", "timeseries_lv05")
+forcing_timeseries_files = [joinpath(forcing_timeseries_dir, "basin_$(id).csv") for id in static_env.basin_ids]
 output_dir =
     joinpath(data_file_path, "simulations", "simulations_lv05", "gamma_IRF")
 @info "creating output"
 if !isdir(output_dir)
     mkpath(output_dir)
 end
-dynamic_env = DynamicEnvironment(forcing_timeseries_dir, output_dir)
+dynamic_env = DynamicEnvironment(static_env.basin_ids, forcing_timeseries_files, output_dir)
 
 env = Environment(static_env, dynamic_env)
 
