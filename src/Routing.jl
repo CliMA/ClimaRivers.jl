@@ -8,32 +8,32 @@ using CSV, DataFrames, Dates, DSP, SpecialFunctions
 function compute_streamflow!(
     river_state::RS,
     river_model::HCM,
-    environment::E,
+    env::E,
     start_date::Date,
     end_date::Date,
 ) where {RS <: RiverState, HCM <: HillslopeChannelRiverModel, E <: Environment}
-    update_state!(river_state, river_model, environment, start_date, end_date)
-    return calculate_streamflow(river_state, environment)
+    update_state!(river_state, river_model, env, start_date, end_date)
+    return compute_streamflow(river_state, env)
 end
 
 function update_state!(
     river_state::RS,
     river_model::HCM,
-    environment::E,
+    env::E,
     start_date::Date,
     end_date::Date,
 ) where {RS <: RiverState, HCM <: HillslopeChannelRiverModel, E <: Environment}
     update_state_from_hillslope!(
         river_state,
         river_model.hillslope_model,
-        environment,
+        env,
         start_date,
         end_date,
     )
     update_state_from_channel!(
         river_state,
         river_model.channel_model,
-        environment,
+        env,
         start_date,
         end_date,
     )
@@ -56,25 +56,23 @@ end
 function update_state_from_hillslope!(
     river_state::RS,
     hillslope_model::HM,
-    env::E,
+    static_env::SE,
+    dynamic_env::DE,
     start_date::Date,
     end_date::Date,
-) where {RS <: RiverState, HM <: AbstractHillslopeModel, E <: Environment}
+) where {RS <: RiverState, HM <: AbstractHillslopeModel, SE <: StaticEnvironment, DE <: DynamicEnvironment}
     println("Starting hillslope update")
 
     # Constants
     day_to_s = 86400
     km²_to_m² = 1000000
 
-    forcing_timeseries_dir = env.dynamic_env.forcing_timeseries_dir
-    output_dir = env.dynamic_env.output_dir
+    forcing_timeseries_dir = dynamic_env.forcing_timeseries_dir
+    output_dir = dynamic_env.output_dir
     dates = collect(start_date:Day(1):end_date)
 
-    basins_dir = env.static_env.basins_dir
-    attributes_df = CSV.read(
-        joinpath(env.static_env.attributes_dir, "attributes.csv"),
-        DataFrame,
-    )
+    all_basin_ids = static_env.basin_ids
+    attributes_df = static_env.attributes
 
     a, θ = hillslope_model.shape, hillslope_model.timescale
     t_max = hillslope_model.t_max
@@ -84,7 +82,6 @@ function update_state_from_hillslope!(
         t in 0:(t_max - 1)
     ]
 
-    all_basin_ids = get_basin_list(joinpath(basins_dir, "all_basin_ids.txt"))
 
     for basin_id in all_basin_ids
         timeseries_df = CSV.read(
@@ -108,6 +105,23 @@ function update_state_from_hillslope!(
             output_df,
         )
     end
+end
+
+function update_state_from_hillslope!(
+    river_state::RS,
+    hillslope_model::HM,
+    env::EE,
+    start_date::Date,
+    end_date::Date,
+) where {RS <: RiverState, HM <: AbstractHillslopeModel, EE <: Environment}
+    update_state_from_hillslope!(
+        river_state,
+        hillslope_model,
+        env.static_env,
+        env.dynamic_env,
+        start_date,
+        end_date,
+    )
 end
 
 # Recursive function to get a list of all upstream basins
@@ -139,28 +153,25 @@ end
 function update_state_from_channel!(
     river_state::RS,
     channel_model::CM,
-    env::E,
+    static_env::SE,
+    dynamic_env::DE,
     start_date::Date,
     end_date::Date,
-) where {RS <: RiverState, CM <: AbstractChannelModel, E <: Environment}
+) where {RS <: RiverState, CM <: AbstractChannelModel, SE <: StaticEnvironment, DE <: DynamicEnvironment}
     println("Starting channel update")
 
     km_to_m = 1e3
 
-    output_dir = env.dynamic_env.output_dir
-    forcing_timeseries_dir = env.dynamic_env.forcing_timeseries_dir
+    output_dir = dynamic_env.output_dir
+    forcing_timeseries_dir = dynamic_env.forcing_timeseries_dir
 
-    graph_dict = env.static_env.graph_dict
-    basins_dir = env.static_env.basins_dir
-    attributes_df = CSV.read(
-        joinpath(env.static_env.attributes_dir, "attributes.csv"),
-        DataFrame,
-    )
+    graph_dict = static_env.graph_dict
+    all_basin_ids = static_env.basin_ids
+    attributes_df = static_env.attributes
 
     C, D = channel_model.wave_velocity, channel_model.diffusivity
     t_max = channel_model.t_max
 
-    all_basin_ids = get_basin_list(joinpath(basins_dir, "all_basin_ids.txt"))
 
     # Iterate over basins in the given routing level
     for basin_id in all_basin_ids
@@ -224,4 +235,22 @@ function update_state_from_channel!(
             channel_streamflow_df,
         )
     end
+end
+
+
+function update_state_from_channel!(
+    river_state::RS,
+    channel_model::CM,
+    env::EE,
+    start_date::Date,
+    end_date::Date,
+) where {RS <: RiverState, CM <: AbstractChannelModel, EE <: Environment}
+    update_state_from_channel!(
+        river_state,
+        channel_model,
+        env.static_env,
+        env.dynamic_env,
+        start_date,
+        end_date,
+    )
 end
