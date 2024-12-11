@@ -13,14 +13,13 @@ river_model = HillslopeChannelRiverModel(hillslope, channel)
 # build environment
 data_file_path = joinpath(@__DIR__, "..", "..", "data", "routing")
 
-# build static environment
+# files for static environment
 @info "reading data files from $(data_file_path)"
 graph_file = joinpath(data_file_path, "graphs", "graph_lv05.json")
 basin_id_file = joinpath(data_file_path, "routing_lvs", "routing_lvs_lv05", "all_basin_ids.txt")
 attributes_file = joinpath(data_file_path, "attributes", "attributes_lv05", "attributes.csv")
-static_env = StaticEnvironment(basin_id_file, attributes_file, graph_file)
 
-# build dynamic environment
+# files for dynamic environment
 forcing_timeseries_dir =
     joinpath(data_file_path, "timeseries", "timeseries_lv05")
 output_dir =
@@ -29,9 +28,16 @@ output_dir =
 if !isdir(output_dir)
     mkpath(output_dir)
 end
-dynamic_env = DynamicEnvironment(forcing_timeseries_dir, output_dir)
 
-env = Environment(static_env, dynamic_env)
+# build environment
+env = Environment(
+    basin_ids_file,
+    attributes_file,
+    graph_file,
+    forcing_timeseries_dir,
+    output_dir,
+    forcing_timeseries_file_prefix="basin_",
+)
 
 ## evolutionary model, evolving a state over time
 model_types = ["instant"]

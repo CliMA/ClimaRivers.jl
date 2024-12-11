@@ -56,7 +56,7 @@ struct DynamicEnvironment
     output_dir::String
 end
 
-function DynamicEnvironment(basin_ids::AV1, forcing_timeseries_files::AV2, output_dir) where {AV1 <: AbstractVector, AV2 <: AbstractVector}
+function DynamicEnvironment(basin_ids::AV1, forcing_timeseries_files::AV2, output_dir::String) where {AV1 <: AbstractVector, AV2 <: AbstractVector}
         
     # build forcing timeseries
     forcing_timeseries_array = [] 
@@ -78,3 +78,31 @@ struct Environment{SE <: StaticEnvironment, DE <: DynamicEnvironment}
     "Dynamic data objects"
     dynamic_env::DE
 end
+
+
+function Environment(
+    basin_ids_file::AS1,
+    attributes_file::AS2,
+    graph_file::AS3,
+    forcing_timeseries_dir::AS4,
+    output_dir::AS5;
+    forcing_timeseries_file_prefix="basin_",
+    ) where {
+        AS1 <: AbstractString,
+        AS2 <: AbstractString,
+        AS3 <: AbstractString,
+        AS4 <: AbstractString,
+        AS5 <: AbstractString,
+    }
+    static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
+
+    basin_ids = static_env.basin_ids
+    forcing_timeseries_files = [
+        joinpath(forcing_timeseries_dir, forcing_timeseries_file_prefix*"$(id).csv") for id in basin_ids
+            ]
+    dynamic_env = DynamicEnvironment(basin_ids, forcing_timeseries_files, output_dir)
+
+    return Environment(static_env, dynamic_env)
+    
+end
+
