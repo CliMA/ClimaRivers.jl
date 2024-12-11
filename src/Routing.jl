@@ -46,7 +46,12 @@ function update_state_from_hillslope!(
     dynamic_env::DE,
     start_date::Date,
     end_date::Date,
-) where {RS <: RiverState, HM <: AbstractHillslopeModel, SE <: StaticEnvironment, DE <: DynamicEnvironment}
+) where {
+    RS <: RiverState,
+    HM <: AbstractHillslopeModel,
+    SE <: StaticEnvironment,
+    DE <: DynamicEnvironment,
+}
     println("Starting hillslope update")
 
     # Constants
@@ -139,7 +144,12 @@ function update_state_from_channel!(
     dynamic_env::DE,
     start_date::Date,
     end_date::Date,
-) where {RS <: RiverState, CM <: AbstractChannelModel, SE <: StaticEnvironment, DE <: DynamicEnvironment}
+) where {
+    RS <: RiverState,
+    CM <: AbstractChannelModel,
+    SE <: StaticEnvironment,
+    DE <: DynamicEnvironment,
+}
     println("Starting channel update")
 
     km_to_m = 1e3

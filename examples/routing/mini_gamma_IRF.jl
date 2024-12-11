@@ -16,8 +16,14 @@ data_file_path = joinpath(@__DIR__, "..", "..", "mini_data", "routing")
 # files for static environment
 @info "reading data files from $(data_file_path)"
 graph_file = joinpath(data_file_path, "graphs", "graph_lv05.json")
-basin_ids_file = joinpath(data_file_path, "routing_lvs", "routing_lvs_lv05", "all_basin_ids.txt")
-attributes_file = joinpath(data_file_path, "attributes", "attributes_lv05", "attributes.csv")
+basin_ids_file = joinpath(
+    data_file_path,
+    "routing_lvs",
+    "routing_lvs_lv05",
+    "all_basin_ids.txt",
+)
+attributes_file =
+    joinpath(data_file_path, "attributes", "attributes_lv05", "attributes.csv")
 
 # files for dynamic environment
 forcing_timeseries_dir =
@@ -36,7 +42,7 @@ env = Environment(
     graph_file,
     forcing_timeseries_dir,
     output_dir,
-    forcing_timeseries_file_prefix="basin_",
+    forcing_timeseries_file_prefix = "basin_",
 )
 
 ## evolutionary model, evolving a state over time

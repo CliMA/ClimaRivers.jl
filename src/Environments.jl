@@ -30,21 +30,17 @@ function StaticEnvironment(
     basin_ids_file::AS1,
     attributes_file::AS2,
     graph_file::AS3,
-    ) where {
-        AS1 <: AbstractString,
-        AS2 <: AbstractString,
-        AS3 <: AbstractString,
-    }
-    
+) where {AS1 <: AbstractString, AS2 <: AbstractString, AS3 <: AbstractString}
+
     # create basin
     basin_ids = get_basin_list(basin_ids_file)
-    
+
     # create attributes
     attributes = CSV.read(attributes_file, DataFrame)
 
     # create graph
     graph_dict = JSON.parsefile(graph_file)
-    
+
     return StaticEnvironment(basin_ids, attributes, graph_dict)
 end
 
@@ -56,15 +52,16 @@ struct DynamicEnvironment
     output_dir::String
 end
 
-function DynamicEnvironment(basin_ids::AV1, forcing_timeseries_files::AV2, output_dir::String) where {AV1 <: AbstractVector, AV2 <: AbstractVector}
-        
+function DynamicEnvironment(
+    basin_ids::AV1,
+    forcing_timeseries_files::AV2,
+    output_dir::String,
+) where {AV1 <: AbstractVector, AV2 <: AbstractVector}
+
     # build forcing timeseries
-    forcing_timeseries_array = [] 
+    forcing_timeseries_array = []
     for file in forcing_timeseries_files
-        push!(
-            forcing_timeseries_array,
-            CSV.read(file, DataFrame),
-        )
+        push!(forcing_timeseries_array, CSV.read(file, DataFrame))
     end
     forcing_timeseries = Dict(eachrow([basin_ids forcing_timeseries_array])) # creates id => timeseries dictionary
 
@@ -86,23 +83,26 @@ function Environment(
     graph_file::AS3,
     forcing_timeseries_dir::AS4,
     output_dir::AS5;
-    forcing_timeseries_file_prefix="basin_",
-    ) where {
-        AS1 <: AbstractString,
-        AS2 <: AbstractString,
-        AS3 <: AbstractString,
-        AS4 <: AbstractString,
-        AS5 <: AbstractString,
-    }
+    forcing_timeseries_file_prefix = "basin_",
+) where {
+    AS1 <: AbstractString,
+    AS2 <: AbstractString,
+    AS3 <: AbstractString,
+    AS4 <: AbstractString,
+    AS5 <: AbstractString,
+}
     static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
 
     basin_ids = static_env.basin_ids
     forcing_timeseries_files = [
-        joinpath(forcing_timeseries_dir, forcing_timeseries_file_prefix*"$(id).csv") for id in basin_ids
-            ]
-    dynamic_env = DynamicEnvironment(basin_ids, forcing_timeseries_files, output_dir)
+        joinpath(
+            forcing_timeseries_dir,
+            forcing_timeseries_file_prefix * "$(id).csv",
+        ) for id in basin_ids
+    ]
+    dynamic_env =
+        DynamicEnvironment(basin_ids, forcing_timeseries_files, output_dir)
 
     return Environment(static_env, dynamic_env)
-    
-end
 
+end

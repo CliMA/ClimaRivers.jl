@@ -62,11 +62,7 @@ function compute_streamflow(
     river_state::RS,
     env::E,
 ) where {RS <: RiverState, E <: Environment}
-    return compute_streamflow(
-        river_state,
-        env.static_env,
-        env.dynamic_env,
-    )
+    return compute_streamflow(river_state, env.static_env, env.dynamic_env)
 end
 
 
