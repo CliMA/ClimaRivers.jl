@@ -15,11 +15,10 @@ data_file_path = joinpath(@__DIR__, "..", "..", "mini_data", "routing")
 
 # build static environment
 @info "reading data files from $(data_file_path)"
-graph_dict =
-    JSON.parsefile(joinpath(data_file_path, "graphs", "graph_lv05.json"))
-basins_dir = joinpath(data_file_path, "routing_lvs", "routing_lvs_lv05")
-attributes_dir = joinpath(data_file_path, "attributes", "attributes_lv05")
-static_env = StaticEnvironment(basins_dir, attributes_dir, graph_dict)
+graph_file = joinpath(data_file_path, "graphs", "graph_lv05.json")
+basin_id_file = joinpath(data_file_path, "routing_lvs", "routing_lvs_lv05", "all_basin_ids.txt")
+attributes_file = joinpath(data_file_path, "attributes", "attributes_lv05", "attributes.csv")
+static_env = StaticEnvironment(basin_id_file, attributes_file, graph_file)
 
 # build dynamic environment
 forcing_timeseries_dir =
