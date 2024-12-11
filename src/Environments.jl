@@ -17,15 +17,27 @@ end
 
 
 # Static Data Objects
+"""
+$(TYPEDEF)
+
+Stores the static features that describe the river basin network
+
+$(TYPEDFIELDS)
+"""
 struct StaticEnvironment{AV <: AbstractVector}
     "Vector of basin identifiers"
     basin_ids::AV
     "Data frame of static basin attributes"
     attributes::DataFrame
-    "Dictionary of pairs (basin_id => basin_ids of direct upstream neighbours)"
+    "Dictionary of pairs `(basin_id => basin_ids of direct upstream neighbours)`"
     graph_dict::Dict
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Constructor of `StaticEnvironment` from three strings holding files for basin id (txt), attributes (csv) and the graph (JSON).
+"""
 function StaticEnvironment(
     basin_ids_file::AS1,
     attributes_file::AS2,
@@ -45,13 +57,25 @@ function StaticEnvironment(
 end
 
 # Dynamic Data Objects
+"""
+$(TYPEDEF)
+
+Stores the dynamic features that apply to the river network over a dated time period
+
+$(TYPEDFIELDS)
+"""
 struct DynamicEnvironment
-    "Dictionary of pairs (basin_id => forcing timeseries at basin_id)"
+    "Dictionary of pairs `(basin_id => forcing timeseries at basin_id)`"
     forcing_timeseries::Dict
     "Directory to store simulation results"
     output_dir::String
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Constructor of `DynamicEnvironment` from a vector of `basin_id`s, and a vector of `forcing_timeseries_files` files (CSV).
+"""
 function DynamicEnvironment(
     basin_ids::AV1,
     forcing_timeseries_files::AV2,
@@ -69,14 +93,56 @@ function DynamicEnvironment(
 end
 
 
+"""
+$(TYPEDEF)
+
+Stores both the static and dynamic environments
+
+$(TYPEDFIELDS)
+"""
 struct Environment{SE <: StaticEnvironment, DE <: DynamicEnvironment}
-    "Static data objects"
+    "StaticEnvironment data objects"
     static_env::SE
-    "Dynamic data objects"
+    "DynamicEnvironment data objects"
     dynamic_env::DE
 end
 
+"""
+$(TYPEDSIGNATURES)
 
+Constructor of `Enviroment` using a list of forcing timeseries files. See constructors for StaticEnvironment and DynamicEnvironment for more details on other inputs.
+"""
+function Environment(
+    basin_ids_file::AS1,
+    attributes_file::AS2,
+    graph_file::AS3,
+    forcing_timeseries_files::AV,
+    output_dir::AS4;
+) where {
+    AS1 <: AbstractString,
+    AS2 <: AbstractString,
+    AS3 <: AbstractString,
+    AS4 <: AbstractString,
+    AV <: AbstractVector,
+}
+    
+    static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
+    basin_ids = static_env.basin_ids
+    dynamic_env =
+        DynamicEnvironment(basin_ids, forcing_timeseries_files, output_dir)
+
+    return Environment(static_env, dynamic_env)
+    
+    
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+Constructor of `Enviroment` using a directory of the forcing timeseries, and inferring the files as
+```forcing_timeseries_dir/forcing_timeseries_file_prefix*\$(basin_id).csv```.
+See constructors for StaticEnvironment and DynamicEnvironment for more details on other inputs.
+"""
 function Environment(
     basin_ids_file::AS1,
     attributes_file::AS2,
