@@ -37,11 +37,11 @@ end
 
 # build environment
 env = Environment(
-    basin_ids_file,
-    attributes_file,
-    graph_file,
-    forcing_timeseries_dir,
-    output_dir,
+    basin_ids_file = basin_ids_file,
+    attributes_file = attributes_file,
+    graph_file = graph_file,
+    forcing_timeseries_dir = forcing_timeseries_dir,
+    output_dir = output_dir,
     forcing_timeseries_file_prefix = "basin_",
 )
 

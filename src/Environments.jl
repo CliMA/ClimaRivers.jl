@@ -20,7 +20,7 @@ end
 """
 $(TYPEDEF)
 
-Stores the static features that describe the river basin network
+Stores the static features that describe the river basin network.
 
 $(TYPEDFIELDS)
 """
@@ -60,7 +60,7 @@ end
 """
 $(TYPEDEF)
 
-Stores the dynamic features that apply to the river network over a dated time period
+Stores the dynamic features that apply to the river network over a dated time period.
 
 $(TYPEDFIELDS)
 """
@@ -125,14 +125,14 @@ function Environment(
     AS4 <: AbstractString,
     AV <: AbstractVector,
 }
-    
+
     static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
     basin_ids = static_env.basin_ids
     dynamic_env =
         DynamicEnvironment(basin_ids, forcing_timeseries_files, output_dir)
 
     return Environment(static_env, dynamic_env)
-       
+
 end
 
 """
@@ -174,16 +174,17 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
+Constructor based on keywords, where users must provide either `forcing_timeseries_dir` or `forcing_timeseries_files`.
 """
 function Environment(;
-    basin_ids_file::Union{AS1,Nothing} = nothing,
-    attributes_file::Union{AS2,Nothing} = nothing,
-    graph_file::Union{AS3,Nothing} = nothing,
-    forcing_timeseries_dir::Union{AS4,Nothing} = nothing,
-    output_dir::Union{AS5,Nothing} = nothing,
+    basin_ids_file::Union{AS1, Nothing} = nothing,
+    attributes_file::Union{AS2, Nothing} = nothing,
+    graph_file::Union{AS3, Nothing} = nothing,
+    forcing_timeseries_dir::Union{AS4, Nothing} = nothing,
+    output_dir::Union{AS5, Nothing} = nothing,
     forcing_timeseries_file_prefix::AS6 = "basin_",
-    forcing_timeseries_files::Union{AS7,Nothing} = nothing,
-
+    forcing_timeseries_files::Union{AS7, Nothing} = nothing,
 ) where {
     AS1 <: AbstractString,
     AS2 <: AbstractString,
@@ -193,7 +194,7 @@ function Environment(;
     AS6 <: AbstractString,
     AS7 <: AbstractString,
 }
-    if isnothing(forcing_timeseries_dir) 
+    if isnothing(forcing_timeseries_dir)
         return Environment(
             basin_ids_file,
             attributes_file,
@@ -201,7 +202,7 @@ function Environment(;
             forcing_timeseries_files,
             output_dir,
         )
-    elseif isnothing(forcing_timeseries_files) 
+    elseif isnothing(forcing_timeseries_files)
         return Environment(
             basin_ids_file,
             attributes_file,
@@ -211,5 +212,5 @@ function Environment(;
             forcing_timeseries_file_prefix = forcing_timeseries_file_prefix,
         )
     end
-        
+
 end
