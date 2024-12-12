@@ -27,7 +27,7 @@ $(TYPEDFIELDS)
 struct StaticEnvironment{AV <: AbstractVector}
     "Vector of basin identifiers"
     basin_ids::AV
-    "Data frame of static basin attributes"
+    "Dataframe of static basin attributes"
     attributes::DataFrame
     "Dictionary of pairs `(basin_id => basin_ids of direct upstream neighbours)`"
     graph_dict::Dict
@@ -65,7 +65,7 @@ Stores the dynamic features that apply to the river network over a dated time pe
 $(TYPEDFIELDS)
 """
 struct DynamicEnvironment
-    "Dictionary of pairs `(basin_id => forcing timeseries at basin_id)`"
+    "Dictionary of pairs `(basin_id => forcing timeseries [DataFrame] at basin_id)`"
     forcing_timeseries::Dict
     "Directory to store simulation results"
     output_dir::String
@@ -132,8 +132,7 @@ function Environment(
         DynamicEnvironment(basin_ids, forcing_timeseries_files, output_dir)
 
     return Environment(static_env, dynamic_env)
-    
-    
+       
 end
 
 """
@@ -171,4 +170,46 @@ function Environment(
 
     return Environment(static_env, dynamic_env)
 
+end
+
+"""
+$(TYPEDSIGNATURES)
+"""
+function Environment(;
+    basin_ids_file::Union{AS1,Nothing} = nothing,
+    attributes_file::Union{AS2,Nothing} = nothing,
+    graph_file::Union{AS3,Nothing} = nothing,
+    forcing_timeseries_dir::Union{AS4,Nothing} = nothing,
+    output_dir::Union{AS5,Nothing} = nothing,
+    forcing_timeseries_file_prefix::AS6 = "basin_",
+    forcing_timeseries_files::Union{AS7,Nothing} = nothing,
+
+) where {
+    AS1 <: AbstractString,
+    AS2 <: AbstractString,
+    AS3 <: AbstractString,
+    AS4 <: AbstractString,
+    AS5 <: AbstractString,
+    AS6 <: AbstractString,
+    AS7 <: AbstractString,
+}
+    if isnothing(forcing_timeseries_dir) 
+        return Environment(
+            basin_ids_file,
+            attributes_file,
+            graph_file,
+            forcing_timeseries_files,
+            output_dir,
+        )
+    elseif isnothing(forcing_timeseries_files) 
+        return Environment(
+            basin_ids_file,
+            attributes_file,
+            graph_file,
+            forcing_timeseries_dir,
+            output_dir,
+            forcing_timeseries_file_prefix = forcing_timeseries_file_prefix,
+        )
+    end
+        
 end
