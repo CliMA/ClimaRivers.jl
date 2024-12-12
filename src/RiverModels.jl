@@ -18,28 +18,16 @@ struct HillslopeChannelRiverModel{
     channel_model::CH
 end
 
-# Auxiliary function
-## function for reading basins from txt file into Vector{Int}
-function get_basin_list(basins_file::String)
-    basins_list = Int64[]
-    file = open(joinpath(basins_file))
-    for line in eachline(file)
-        push!(basins_list, parse(Int64, line))
-    end
-    close(file)
 
-    return basins_list
-end
-
-function calculate_streamflow(
+function compute_streamflow(
     river_state::RS,
-    env::E,
-) where {RS <: RiverState, E <: Environment}
+    static_env::SE,
+    dynamic_env::DE,
+) where {RS <: RiverState, SE <: StaticEnvironment, DE <: DynamicEnvironment}
 
-    output_dir = env.dynamic_env.output_dir
+    output_dir = dynamic_env.output_dir
 
-    all_basin_ids =
-        get_basin_list(joinpath(env.static_env.basins_dir, "all_basin_ids.txt"))
+    all_basin_ids = static_env.basin_ids
 
     for basin_id in all_basin_ids
         channel_file = joinpath(output_dir, "channel_basin_$basin_id.csv")
@@ -69,6 +57,14 @@ function calculate_streamflow(
         println("Results saved to $total_file")
     end
 end
+
+function compute_streamflow(
+    river_state::RS,
+    env::E,
+) where {RS <: RiverState, E <: Environment}
+    return compute_streamflow(river_state, env.static_env, env.dynamic_env)
+end
+
 
 # Specific hillslope-channel models loaded here:
 # include("MizurouteV1.jl")
