@@ -56,7 +56,41 @@ function StaticEnvironment(
     return StaticEnvironment(basin_ids, attributes, graph_dict)
 end
 
+# Some time information of the data
+export DateWindow
+
+"""
+$(TYPEDEF)
+
+Stores a dated time period with an iterator.
+
+$(TYPEDFIELDS)
+"""
+struct DateWindow
+    "beginning of date window [Date]"
+    start_date::Date
+    "end of date window [Date]"
+    end_date::Date
+    "size of iteration in date window [DatePeriod]"
+    date_step::DatePeriod
+end
+
+"""
+$(TYPEDSIGNATURES)
+
+build a DateWindow with keyword arguments.
+"""
+function DateWindow(;
+    start_date::Union{Date,Nothing} = nothing,
+    end_date::Union{Date,Nothing} = nothing,
+    date_step::Union{DatePeriod,Nothing} = nothing,
+    )
+    return DateWindow(start_date, end_date, date_step)
+    
+end
+
 # Dynamic Data Objects
+
 """
 $(TYPEDEF)
 
@@ -67,6 +101,8 @@ $(TYPEDFIELDS)
 struct DynamicEnvironment
     "Dictionary of pairs `(basin_id => forcing timeseries [DataFrame] at basin_id)`"
     forcing_timeseries::Dict
+    "Window over which the forcing timeseries is defined [DateWindow]"
+    date_window::DateWindow
     "Directory to store simulation results"
     output_dir::String
 end
@@ -79,6 +115,7 @@ Constructor of `DynamicEnvironment` from a vector of `basin_id`s, and a vector o
 function DynamicEnvironment(
     basin_ids::AV1,
     forcing_timeseries_files::AV2,
+    date_window::DateWindow,
     output_dir::String,
 ) where {AV1 <: AbstractVector, AV2 <: AbstractVector}
 
@@ -89,7 +126,7 @@ function DynamicEnvironment(
     end
     forcing_timeseries = Dict(eachrow([basin_ids forcing_timeseries_array])) # creates id => timeseries dictionary
 
-    return DynamicEnvironment(forcing_timeseries, output_dir)
+    return DynamicEnvironment(forcing_timeseries, date_window, output_dir)
 end
 
 
@@ -111,28 +148,29 @@ end
 $(TYPEDSIGNATURES)
 
 Constructor of `Enviroment` using a list of forcing timeseries files. See constructors for StaticEnvironment and DynamicEnvironment for more details on other inputs.
-"""
+            """
 function Environment(
     basin_ids_file::AS1,
     attributes_file::AS2,
     graph_file::AS3,
     forcing_timeseries_files::AV,
-    output_dir::AS4,
-) where {
-    AS1 <: AbstractString,
-    AS2 <: AbstractString,
-    AS3 <: AbstractString,
-    AS4 <: AbstractString,
-    AV <: AbstractVector,
-}
-
+    date_window::DateWindow,
+    output_dir::AS4;
+    ) where {
+        AS1 <: AbstractString,
+        AS2 <: AbstractString,
+        AS3 <: AbstractString,
+        AS4 <: AbstractString,
+        AV <: AbstractVector,
+    }
+    
     static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
     basin_ids = static_env.basin_ids
     dynamic_env =
-        DynamicEnvironment(basin_ids, forcing_timeseries_files, output_dir)
-
+        DynamicEnvironment(basin_ids, forcing_timeseries_files, date_window, output_dir)
+    
     return Environment(static_env, dynamic_env)
-
+    
 end
 
 """
@@ -147,29 +185,30 @@ function Environment(
     attributes_file::AS2,
     graph_file::AS3,
     forcing_timeseries_dir::AS4,
+    date_window::DateWindow,
     output_dir::AS5;
     forcing_timeseries_file_prefix = "basin_",
-) where {
-    AS1 <: AbstractString,
-    AS2 <: AbstractString,
-    AS3 <: AbstractString,
-    AS4 <: AbstractString,
-    AS5 <: AbstractString,
-}
+    ) where {
+        AS1 <: AbstractString,
+        AS2 <: AbstractString,
+        AS3 <: AbstractString,
+        AS4 <: AbstractString,
+        AS5 <: AbstractString,
+    }
     static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
-
+    
     basin_ids = static_env.basin_ids
     forcing_timeseries_files = [
         joinpath(
             forcing_timeseries_dir,
             forcing_timeseries_file_prefix * "$(id).csv",
         ) for id in basin_ids
-    ]
+            ]
     dynamic_env =
-        DynamicEnvironment(basin_ids, forcing_timeseries_files, output_dir)
+        DynamicEnvironment(basin_ids, forcing_timeseries_files, date_window, output_dir)
 
     return Environment(static_env, dynamic_env)
-
+    
 end
 
 """
@@ -178,14 +217,15 @@ $(TYPEDSIGNATURES)
 Constructor based on keywords, where users must provide either `forcing_timeseries_dir` or `forcing_timeseries_files`.
 """
 function Environment(;
-    basin_ids_file::Union{String, Nothing} = nothing,
-    attributes_file::Union{String, Nothing} = nothing,
-    graph_file::Union{String, Nothing} = nothing,
-    forcing_timeseries_dir::Union{String, Nothing} = nothing,
-    output_dir::Union{String, Nothing} = nothing,
-    forcing_timeseries_file_prefix::String = "basin_",
-    forcing_timeseries_files::Union{<:Vector{String}, Nothing} = nothing,
-) # union with nothing is not allowed a "where" statement, see detect_unbound_args in Aqua.jl
+                     basin_ids_file::Union{String, Nothing} = nothing,
+                     attributes_file::Union{String, Nothing} = nothing,
+                     graph_file::Union{String, Nothing} = nothing,
+                     forcing_timeseries_dir::Union{String, Nothing} = nothing,
+                     output_dir::Union{String, Nothing} = nothing,
+                     date_window::Union{DateWindow, Nothing} = nothing,
+                     forcing_timeseries_file_prefix::String = "basin_",
+                     forcing_timeseries_files::Union{<:Vector{String}, Nothing} = nothing,
+                     ) # union with nothing is not allowed a "where" statement, see detect_unbound_args in Aqua.jl
     arg_list_one = [basin_ids_file, attributes_file, graph_file, output_dir]
     any_nothing = any([isnothing(x) for x in arg_list_one])
     if any_nothing
@@ -221,6 +261,7 @@ Environment must be built with values for all these keywords. But received:\n
             attributes_file,
             graph_file,
             forcing_timeseries_files,
+            date_window,
             output_dir,
         )
     elseif isnothing(forcing_timeseries_files)
@@ -229,6 +270,7 @@ Environment must be built with values for all these keywords. But received:\n
             attributes_file,
             graph_file,
             forcing_timeseries_dir,
+            date_window,
             output_dir,
             forcing_timeseries_file_prefix = forcing_timeseries_file_prefix,
         )
