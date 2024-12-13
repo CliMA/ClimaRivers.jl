@@ -39,7 +39,11 @@ end
 data_start_date = Date("1996-01-01", "yyyy-mm-dd")
 data_end_date = Date("2014-12-31", "yyyy-mm-dd") # of entire simulation
 data_step = Day(1)
-data_date_window = DateWindow(start_date=data_start_date, end_date=data_end_date, date_step=data_step)
+data_date_window = DateWindow(
+    start_date = data_start_date,
+    end_date = data_end_date,
+    date_step = data_step,
+)
 
 # build environment
 env = Environment(
@@ -52,20 +56,14 @@ env = Environment(
     forcing_timeseries_file_prefix = "basin_",
 )
 
-
-## evolutionary model, evolving a state over time
-model_types = ["instant"]
-model_type = model_types[1]
-
-
-
 # River state loaded into csv files currently, placehodler variable
-hillslope_data = zeros(10, 10)
-channel_data = zeros(10, 10)
+history_length = 50 * Day(1)
+initial_window = DateWindow(
+    start_date = data_start_date,
+    end_date = data_start_date + history_length,
+    date_step = data_step,
+)
 
-river_state = HillslopeChannelRiverState(hillslope_data, channel_data)
-
-if model_type == "instant"
-    ## full-timeseries model, predicts all states at once
-    compute_streamflow!(river_state, river_model, env, data_start_date, data_end_date)
-end
+## full-timeseries model, predicts all states at once
+streamflows, river_states =
+    compute_streamflow(initial_window, river_model, env, data_end_date)

@@ -1,6 +1,11 @@
 # Contains the structs that define the static and dynamic environment that configures/forces the river model.
 using JSON, CSV, DataFrames
+
+import Base.iterate
+
 export StaticEnvironment, DynamicEnvironment, Environment
+export DateWindow
+export get_all_dates, iterate
 
 ## Auxiliary functions
 # function for reading basins from txt file into Vector{Int}
@@ -50,14 +55,14 @@ function StaticEnvironment(
     # create attributes
     attributes = CSV.read(attributes_file, DataFrame)
 
-    # create graph
+    # create graph, and make it inter-valued
     graph_dict = JSON.parsefile(graph_file)
+
 
     return StaticEnvironment(basin_ids, attributes, graph_dict)
 end
 
 # Some time information of the data
-export DateWindow
 
 """
 $(TYPEDEF)
@@ -81,14 +86,26 @@ $(TYPEDSIGNATURES)
 build a DateWindow with keyword arguments.
 """
 function DateWindow(;
-    start_date::Union{Date,Nothing} = nothing,
-    end_date::Union{Date,Nothing} = nothing,
-    date_step::Union{DatePeriod,Nothing} = nothing,
-    )
+    start_date::Union{Date, Nothing} = nothing,
+    end_date::Union{Date, Nothing} = nothing,
+    date_step::Union{DatePeriod, Nothing} = nothing,
+)
     return DateWindow(start_date, end_date, date_step)
-    
+
 end
 
+function get_all_dates(dw::DateWindow)
+    return collect((dw.start_date):(dw.date_step):(dw.end_date))
+end
+
+function Base.iterate(dw::DateWindow; n_steps::Int = 1)
+    date_step = dw.date_step
+    return DateWindow(
+        dw.start_date + n_steps * date_step,
+        dw.end_date + n_steps * date_step,
+        date_step,
+    )
+end
 # Dynamic Data Objects
 
 """
@@ -166,9 +183,13 @@ function Environment(
     
     static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
     basin_ids = static_env.basin_ids
-    dynamic_env =
-        DynamicEnvironment(basin_ids, forcing_timeseries_files, date_window, output_dir)
-    
+    dynamic_env = DynamicEnvironment(
+        basin_ids,
+        forcing_timeseries_files,
+        date_window,
+        output_dir,
+    )
+
     return Environment(static_env, dynamic_env)
     
 end
@@ -203,9 +224,13 @@ function Environment(
             forcing_timeseries_dir,
             forcing_timeseries_file_prefix * "$(id).csv",
         ) for id in basin_ids
-            ]
-    dynamic_env =
-        DynamicEnvironment(basin_ids, forcing_timeseries_files, date_window, output_dir)
+    ]
+    dynamic_env = DynamicEnvironment(
+        basin_ids,
+        forcing_timeseries_files,
+        date_window,
+        output_dir,
+    )
 
     return Environment(static_env, dynamic_env)
     
