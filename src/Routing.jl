@@ -18,7 +18,7 @@ function compute_streamflow(
     while date_window.end_date <= end_date
         # @info "computing streamflow over window [$(date_window.start_date),$(date_window.end_date)]"
         river_state =
-            compute_river_state(date_window, river_model, env, date_window.end_date)
+            compute_river_state(date_window, river_model, env)
         push!(river_states, river_state)
         push!(streamflows, compute_streamflow(river_state, env))
         date_window = iterate(date_window)
@@ -31,7 +31,6 @@ function compute_river_state(
     date_window::DateWindow,
     river_model::HCM,
     env::E,
-    end_date::Date,
 ) where {HCM <: HillslopeChannelRiverModel, E <: Environment}
 
     new_hillslope_state =
