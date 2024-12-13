@@ -55,7 +55,7 @@ function StaticEnvironment(
     # create attributes
     attributes = CSV.read(attributes_file, DataFrame)
 
-    # create graph, and make it inter-valued
+    # create graph
     graph_dict = JSON.parsefile(graph_file)
 
 
