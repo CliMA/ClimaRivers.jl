@@ -18,7 +18,7 @@ function compute_streamflow(
     while date_window.end_date <= end_date
         # @info "computing streamflow over window [$(date_window.start_date),$(date_window.end_date)]"
         river_state =
-            compute_river_state(date_window, river_model, env, end_date)
+            compute_river_state(date_window, river_model, env, date_window.end_date)
         push!(river_states, river_state)
         push!(streamflows, compute_streamflow(river_state, env))
         date_window = iterate(date_window)
@@ -203,14 +203,12 @@ function compute_channel_state(
             x = dist[1]
             distribution = [
                 x / (2 * t * sqrt(π * D * t)) *
-                exp(-((C * t - x)^2 / (4 * D * t))) for t in 1:t_max
-            ]
+                exp(-((C * t - x)^2 / (4 * D * t))) for t in 1:min(t_max,length(up_timeseries))
+            ] 
 
-            # perform convolution
-            streamflow[:, 1] =
-                DSP.conv(up_q[:, 1], distribution)[1:size(up_q)[1]]
+            streamflow = dot(up_q[:],distribution[end:-1:1]) # q(t) = sum(q(s)*dist(t-s))
 
-            new_state[basin_id] += streamflow[end] # get final streamflow
+            new_state[basin_id] += streamflow # get final streamflow
         end
 
     end
