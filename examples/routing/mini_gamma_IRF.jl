@@ -58,6 +58,7 @@ env = Environment(
 
 # River state loaded into csv files currently, placehodler variable
 history_length = 50 * Day(1)
+@info "using history length $(history_length)"
 initial_window = DateWindow(
     start_date = data_start_date,
     end_date = data_start_date + history_length,
@@ -65,5 +66,6 @@ initial_window = DateWindow(
 )
 
 ## full-timeseries model, predicts all states at once
+@info "computing streamflow over network $(history_length)"
 streamflows, river_states =
     compute_streamflow(initial_window, river_model, env, data_end_date)
