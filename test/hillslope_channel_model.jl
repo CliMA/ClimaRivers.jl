@@ -24,7 +24,7 @@ end
     @test slope1.timescale == slope2.timescale
     @test slope1.t_max == slope2.t_max
     @test slope1 == slope2
-    
+
 
     # Channel
     FT = Float64
