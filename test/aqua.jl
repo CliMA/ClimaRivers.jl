@@ -5,6 +5,10 @@ using Aqua
 @testset "Aqua tests (performance)" begin
     ua = Aqua.detect_unbound_args_recursively(ClimaRivers)
     @test length(ua) == 0
+    if length(ua) > 0
+        println(ua)
+    end
+
     ambs = Aqua.detect_ambiguities(ClimaRivers; recursive = true)
     pkg_match(pkgname, pkdir::Nothing) = false
     pkg_match(pkgname, pkdir::AbstractString) = occursin(pkgname, pkdir)

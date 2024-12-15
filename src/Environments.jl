@@ -117,7 +117,7 @@ function Environment(
     attributes_file::AS2,
     graph_file::AS3,
     forcing_timeseries_files::AV,
-    output_dir::AS4;
+    output_dir::AS4,
 ) where {
     AS1 <: AbstractString,
     AS2 <: AbstractString,
@@ -178,22 +178,43 @@ $(TYPEDSIGNATURES)
 Constructor based on keywords, where users must provide either `forcing_timeseries_dir` or `forcing_timeseries_files`.
 """
 function Environment(;
-    basin_ids_file::Union{AS1, Nothing} = nothing,
-    attributes_file::Union{AS2, Nothing} = nothing,
-    graph_file::Union{AS3, Nothing} = nothing,
-    forcing_timeseries_dir::Union{AS4, Nothing} = nothing,
-    output_dir::Union{AS5, Nothing} = nothing,
-    forcing_timeseries_file_prefix::AS6 = "basin_",
-    forcing_timeseries_files::Union{AS7, Nothing} = nothing,
-) where {
-    AS1 <: AbstractString,
-    AS2 <: AbstractString,
-    AS3 <: AbstractString,
-    AS4 <: AbstractString,
-    AS5 <: AbstractString,
-    AS6 <: AbstractString,
-    AS7 <: AbstractString,
-}
+    basin_ids_file::Union{String, Nothing} = nothing,
+    attributes_file::Union{String, Nothing} = nothing,
+    graph_file::Union{String, Nothing} = nothing,
+    forcing_timeseries_dir::Union{String, Nothing} = nothing,
+    output_dir::Union{String, Nothing} = nothing,
+    forcing_timeseries_file_prefix::String = "basin_",
+    forcing_timeseries_files::Union{<:Vector{String}, Nothing} = nothing,
+) # union with nothing is not allowed a "where" statement, see detect_unbound_args in Aqua.jl
+    arg_list_one = [basin_ids_file, attributes_file, graph_file, output_dir]
+    any_nothing = any([isnothing(x) for x in arg_list_one])
+    if any_nothing
+        throw(
+            ArgumentError(
+                """
+Environment must be built with values for all these keywords. But received:\n
+    basin_ids_file  = $(arg_list_one[1]), 
+    attributes_file = $(arg_list_one[2]), 
+    graph_file      = $(arg_list_one[3]), 
+    output_dir      = $(arg_list_one[4]),
+""",
+            ),
+        )
+    end
+
+    arg_list_two = [forcing_timeseries_files, forcing_timeseries_dir]
+    all_nothing = all([isnothing(x) for x in arg_list_two])
+    if all_nothing
+        throw(ArgumentError("""
+                Environment must be built with values for either keywords:
+                    forcing_timeseries_files,
+                    forcing_timeseries_dir,
+                Received neither.
+                """))
+    end
+
+
+
     if isnothing(forcing_timeseries_dir)
         return Environment(
             basin_ids_file,
@@ -211,6 +232,8 @@ function Environment(;
             output_dir,
             forcing_timeseries_file_prefix = forcing_timeseries_file_prefix,
         )
+    else
+
     end
 
 end
