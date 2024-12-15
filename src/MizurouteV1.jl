@@ -18,8 +18,6 @@ function MizurouteHillslopeV1{FT}() where {FT <: AbstractFloat}
     return MizurouteHillslopeV1(shape, timescale, t_max)
 end
 
-function update_state_from_hillslope!(river_state, hillslope_model, environment) end
-
 struct MizurouteChannelV1{FT <: AbstractFloat} <: AbstractChannelModel
     "Wave velocity, C [m/day]"
     wave_velocity::FT
