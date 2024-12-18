@@ -69,13 +69,19 @@ initial_window = DateWindow(
 ## full-timeseries model, predicts all states at once
 @info "computing streamflow over network $(history_length)"
 ttt = @elapsed begin
-streamflows, river_states =
-    compute_streamflow(initial_window, river_model, env, data_end_date)
+    streamflows, river_states =
+        compute_streamflow(initial_window, river_model, env, data_end_date)
 end
 @info "Complete. Time taken: $ttt"
 
 #  save data
-JLD2.save(joinpath(output_dir,"streamflow_history$(history_length).jld2"),"streamflows", streamflows, "river_states",river_states)
+JLD2.save(
+    joinpath(output_dir, "streamflow_history$(history_length).jld2"),
+    "streamflows",
+    streamflows,
+    "river_states",
+    river_states,
+)
 ## load data with
 # Using ClimaRivers, JLD2
 # load("filepath")
