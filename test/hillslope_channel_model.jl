@@ -38,5 +38,13 @@ end
     @test channel1.t_max == channel2.t_max
     @test channel1 == channel2
 
+end
 
+@testset "Routing Tests" begin
+    # can be example mad eup solutions, get edge cases
+    upstream_basins = ClimaRivers.Routing.get_upstream_basins("1", {1:[]}) # get edge cases
+    @test upstream_basins == []
+    
+    # test running of mini test to make sure output is correct
+    # can use small chunk of time 2-10 days or can adjust t_max to be like 25
 end
