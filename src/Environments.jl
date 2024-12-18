@@ -173,14 +173,14 @@ function Environment(
     forcing_timeseries_files::AV,
     date_window::DateWindow,
     output_dir::AS4;
-    ) where {
-        AS1 <: AbstractString,
-        AS2 <: AbstractString,
-        AS3 <: AbstractString,
-        AS4 <: AbstractString,
-        AV <: AbstractVector,
-    }
-    
+) where {
+    AS1 <: AbstractString,
+    AS2 <: AbstractString,
+    AS3 <: AbstractString,
+    AS4 <: AbstractString,
+    AV <: AbstractVector,
+}
+
     static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
     basin_ids = static_env.basin_ids
     dynamic_env = DynamicEnvironment(
@@ -191,7 +191,7 @@ function Environment(
     )
 
     return Environment(static_env, dynamic_env)
-    
+
 end
 
 """
@@ -209,15 +209,15 @@ function Environment(
     date_window::DateWindow,
     output_dir::AS5;
     forcing_timeseries_file_prefix = "basin_",
-    ) where {
-        AS1 <: AbstractString,
-        AS2 <: AbstractString,
-        AS3 <: AbstractString,
-        AS4 <: AbstractString,
-        AS5 <: AbstractString,
-    }
+) where {
+    AS1 <: AbstractString,
+    AS2 <: AbstractString,
+    AS3 <: AbstractString,
+    AS4 <: AbstractString,
+    AS5 <: AbstractString,
+}
     static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
-    
+
     basin_ids = static_env.basin_ids
     forcing_timeseries_files = [
         joinpath(
@@ -233,7 +233,7 @@ function Environment(
     )
 
     return Environment(static_env, dynamic_env)
-    
+
 end
 
 """
@@ -242,15 +242,15 @@ $(TYPEDSIGNATURES)
 Constructor based on keywords, where users must provide either `forcing_timeseries_dir` or `forcing_timeseries_files`.
 """
 function Environment(;
-                     basin_ids_file::Union{String, Nothing} = nothing,
-                     attributes_file::Union{String, Nothing} = nothing,
-                     graph_file::Union{String, Nothing} = nothing,
-                     forcing_timeseries_dir::Union{String, Nothing} = nothing,
-                     output_dir::Union{String, Nothing} = nothing,
-                     date_window::Union{DateWindow, Nothing} = nothing,
-                     forcing_timeseries_file_prefix::String = "basin_",
-                     forcing_timeseries_files::Union{<:Vector{String}, Nothing} = nothing,
-                     ) # union with nothing is not allowed a "where" statement, see detect_unbound_args in Aqua.jl
+    basin_ids_file::Union{String, Nothing} = nothing,
+    attributes_file::Union{String, Nothing} = nothing,
+    graph_file::Union{String, Nothing} = nothing,
+    forcing_timeseries_dir::Union{String, Nothing} = nothing,
+    output_dir::Union{String, Nothing} = nothing,
+    date_window::Union{DateWindow, Nothing} = nothing,
+    forcing_timeseries_file_prefix::String = "basin_",
+    forcing_timeseries_files::Union{<:Vector{String}, Nothing} = nothing,
+) # union with nothing is not allowed a "where" statement, see detect_unbound_args in Aqua.jl
     arg_list_one = [basin_ids_file, attributes_file, graph_file, output_dir]
     any_nothing = any([isnothing(x) for x in arg_list_one])
     if any_nothing
