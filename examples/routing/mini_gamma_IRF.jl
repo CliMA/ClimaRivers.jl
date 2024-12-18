@@ -72,4 +72,9 @@ streamflows, river_states =
     compute_streamflow(initial_window, river_model, env, data_end_date)
 end
 @info "Complete. Time taken: $ttt"
-JLD2.save(joinpath(output_dir,"streamflow_history$(history_length).jld2"),"streamflow", streamflows, "river_states",river_states)
+
+#  save data
+JLD2.save(joinpath(output_dir,"streamflow_history$(history_length).jld2"),"streamflows", streamflows, "river_states",river_states)
+## load data with
+# Using ClimaRivers, JLD2
+# load("filepath")
