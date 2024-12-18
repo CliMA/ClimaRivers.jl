@@ -7,8 +7,14 @@ data_file_path = joinpath(@__DIR__, "..", "..", "data", "routing")
 
 # build static environment
 @info "reading data files from $(data_file_path)"
-maurico_path = joinpath(data_file_path, "simulations", "simulations_lv05", "simulation_gamma-IRF")
-new_path = joinpath(data_file_path, "simulations", "simulations_lv05", "gamma_IRF")
+maurico_path = joinpath(
+    data_file_path,
+    "simulations",
+    "simulations_lv05",
+    "simulation_gamma-IRF",
+)
+new_path =
+    joinpath(data_file_path, "simulations", "simulations_lv05", "gamma_IRF")
 output_path = joinpath(@__DIR__, "csv_files")
 
 # Function to check the streamflow relationship and save results
