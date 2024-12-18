@@ -1,5 +1,5 @@
 using ClimaRivers
-using JSON, Dates
+using JSON, Dates, JLD2
 
 # build hillslope model
 hillslope = MizurouteHillslopeV1{Float64}()
@@ -30,7 +30,7 @@ forcing_timeseries_dir =
     joinpath(data_file_path, "timeseries", "timeseries_lv05")
 output_dir =
     joinpath(data_file_path, "simulations", "simulations_lv05", "gamma_IRF")
-@info "creating output path"
+@info "output path: $output_dir"
 if !isdir(output_dir)
     mkpath(output_dir)
 end
@@ -67,5 +67,9 @@ initial_window = DateWindow(
 
 ## full-timeseries model, predicts all states at once
 @info "computing streamflow over network $(history_length)"
+ttt = @elapsed begin
 streamflows, river_states =
     compute_streamflow(initial_window, river_model, env, data_end_date)
+end
+@info "Complete. Time taken: $ttt"
+JLD2.save(joinpath(output_dir,"streamflow_history$(history_length).jld2"),"streamflow", streamflows, "river_states",river_states)
