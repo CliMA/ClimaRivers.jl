@@ -70,7 +70,6 @@ function compute_hillslope_state(
 
     start_date = date_window.start_date
     end_date = date_window.end_date
-    dates = get_all_dates(date_window)
 
     all_basin_ids = static_env.basin_ids
     attributes_df = static_env.attributes
@@ -164,7 +163,6 @@ function compute_channel_state(
 
     start_date = date_window.start_date
     end_date = date_window.end_date
-    dates = get_all_dates(date_window)
 
     C, D = channel_model.wave_velocity, channel_model.diffusivity
     t_max = channel_model.t_max
