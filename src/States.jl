@@ -4,9 +4,9 @@ export RiverState, HillslopeChannelRiverState
 abstract type RiverState end
 
 struct HillslopeChannelRiverState <: RiverState
-    "Hillslope state history [Dict(id -> Matrix: time-within-lag (end=current) x basin)]"
+    "Hillslope state history [Dict(id -> Vector: time-within-lag (end=current)]"
     hillslope_state::Dict
-    "Channel state [Dict(id -> Matrix: 1 x basin)]"
+    "Channel state [Dict(id -> Float)]"
     channel_state::Dict
     "Date window [DateWindow] of the state history"
     date_window::DateWindow
