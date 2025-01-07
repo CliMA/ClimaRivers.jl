@@ -1,6 +1,5 @@
 using Test
 using ClimaRivers #(gather up the exported functions and structs for use in this scope)
-import ClimaRivers: MizurouteHillslopeV1
 
 @testset "Hillslope channel model tests" begin
 
@@ -42,8 +41,20 @@ end
 
 @testset "Routing Tests" begin
     # can be example mad eup solutions, get edge cases
-    upstream_basins = ClimaRivers.Routing.get_upstream_basins("1", {1:[]}) # get edge cases
-    @test upstream_basins == []
+    graph_dict = Dict(
+        "1" => [],
+        "2" => [],
+        "3" => [],
+        "4" => [1, 2],
+        "5" => [3, 4]
+    )
+    graph_dict = Dict{String, Any}(graph_dict)
+    upstream1 = get_upstream_basins("1", graph_dict)
+    upstream4 = get_upstream_basins("4", graph_dict)
+    upstream5 = get_upstream_basins("5", graph_dict)
+    @test sort(upstream1) == []
+    @test sort(upstream4) == [1,2]
+    @test sort(upstream5) == [1,2,3,4]
 
     # test running of mini test to make sure output is correct
     # can use small chunk of time 2-10 days or can adjust t_max to be like 25

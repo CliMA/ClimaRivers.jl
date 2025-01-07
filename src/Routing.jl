@@ -1,6 +1,6 @@
 # general methods for routing rivers
 export compute_streamflow,
-    compute_river_state, compute_channel_state, compute_hillslope_state
+    compute_river_state, compute_channel_state, compute_hillslope_state, get_upstream_basins
 
 using CSV, DataFrames, Dates, DSP, SpecialFunctions
 
