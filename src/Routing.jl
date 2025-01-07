@@ -5,6 +5,11 @@ export compute_streamflow,
 using CSV, DataFrames, Dates, DSP, SpecialFunctions
 
 # methods
+"""
+$(TYPEDSIGNATURES)
+
+Iterating the `initial_date_window` until the `end_date`, return a `river_state` and streamflow from each `date_window`
+"""
 function compute_streamflow(
     initial_date_window::DateWindow,
     river_model::HCM,
@@ -22,10 +27,15 @@ function compute_streamflow(
         push!(streamflows, compute_streamflow(river_state, env))
         date_window = iterate(date_window)
     end
-
+    
     return streamflows, river_states
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Compute and return the `HillslopeChannelRiverState` for this `date_window`.
+"""
 function compute_river_state(
     date_window::DateWindow,
     river_model::HCM,
@@ -41,16 +51,18 @@ function compute_river_state(
         river_model.channel_model,
         env,
     )
-
     return HillslopeChannelRiverState(
         new_hillslope_state,
         new_channel_state,
         date_window,
     )
-
-
+   
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+"""
 function compute_hillslope_state(
     date_window::DateWindow,
     hillslope_model::HM,
@@ -103,6 +115,11 @@ function compute_hillslope_state(
 
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Computes the hillslope state, by convolving a weighted `forcing_timeseries` and `hillslope_model` delay distribution over the `date_window`.
+"""
 function compute_hillslope_state(
     date_window::DateWindow,
     hillslope_model::HM,
@@ -142,6 +159,9 @@ function get_upstream_basins(basin_id::String, graph_dict::Dict)
     return unique(upstream_basin_list)
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function compute_channel_state(
     new_hillslope::Dict,
     date_window::DateWindow,
@@ -161,7 +181,6 @@ function compute_channel_state(
     all_basin_ids = static_env.basin_ids
     attributes_df = static_env.attributes
 
-    start_date = date_window.start_date
     end_date = date_window.end_date
 
     C, D = channel_model.wave_velocity, channel_model.diffusivity
@@ -214,6 +233,11 @@ function compute_channel_state(
 end
 
 
+"""
+$(TYPEDSIGNATURES)
+
+Computes the channel state at the end of the `date_window`, using the `new_hillslope` state history.
+"""
 function compute_channel_state(
     new_hillslope::Dict,
     date_window::DateWindow,
@@ -229,18 +253,20 @@ function compute_channel_state(
     )
 end
 
+"""
+$(TYPEDSIGNATURES)
+"""
 function compute_streamflow(
     river_state::RS,
     static_env::SE,
     dynamic_env::DE,
-) where {RS <: RiverState, SE <: StaticEnvironment, DE <: DynamicEnvironment}
+) where {RS <: HillslopeChannelRiverState, SE <: StaticEnvironment, DE <: DynamicEnvironment}
 
     output_dir = dynamic_env.output_dir
     all_basin_ids = static_env.basin_ids
 
     hillslope_state = river_state.hillslope_state
     channel_state = river_state.channel_state
-    date_window = river_state.date_window
 
     total_streamflow =
         Dict(eachrow([all_basin_ids repeat([NaN], length(all_basin_ids))]))
@@ -251,9 +277,14 @@ function compute_streamflow(
     return total_streamflow
 end
 
+"""
+$(TYPEDSIGNATURES)
+
+Compute the streamflow from an `Environment` and a computed `HillslopeChannelRiverState`
+"""
 function compute_streamflow(
     river_state::RS,
     env::EE,
-) where {RS <: RiverState, EE <: Environment}
+) where {RS <: HillslopeChannelRiverState, EE <: Environment}
     return compute_streamflow(river_state, env.static_env, env.dynamic_env)
 end
