@@ -1,5 +1,5 @@
 using ClimaRivers
-using JSON, Dates
+using JSON, Dates, JLD2
 
 # build hillslope model
 hillslope = MizurouteHillslopeV1{Float64}()
@@ -35,32 +35,53 @@ if !isdir(output_dir)
     mkpath(output_dir)
 end
 
+# data date information
+data_start_date = Date("1996-01-01", "yyyy-mm-dd")
+data_end_date = Date("2014-12-31", "yyyy-mm-dd") # of entire simulation
+data_step = Day(1)
+data_date_window = DateWindow(
+    start_date = data_start_date,
+    end_date = data_end_date,
+    date_step = data_step,
+)
+
 # build environment
 env = Environment(
     basin_ids_file = basin_ids_file,
     attributes_file = attributes_file,
     graph_file = graph_file,
     forcing_timeseries_dir = forcing_timeseries_dir,
+    date_window = data_date_window,
     output_dir = output_dir,
     forcing_timeseries_file_prefix = "basin_",
 )
 
 
-## evolutionary model, evolving a state over time
-model_types = ["instant"]
-model_type = model_types[1]
+# River state loaded into csv files currently, placehodler variable
+history_length = 120 * Day(1)
+@info "using history length $(history_length)"
+initial_window = DateWindow(
+    start_date = data_start_date,
+    end_date = data_start_date + history_length,
+    date_step = data_step,
+)
 
-start_date = Date("1996-01-01", "yyyy-mm-dd")
-end_date = Date("2014-12-31", "yyyy-mm-dd")
-dates = collect(start_date:Day(1):end_date)
-
-# streamflow = zeros(dates,basins)
-hillslope_data = zeros(10, 10)  # Replace with actual data once implemented
-channel_data = zeros(10, 10)   # Replace with actual data once implemented
-
-river_state = RiverState(hillslope_data, channel_data)
-
-if model_type == "instant"
-    ## full-timeseries model, predicts all states at once
-    compute_streamflow!(river_state, river_model, env, start_date, end_date)
+## full-timeseries model, predicts all states at once
+@info "computing streamflow over network $(history_length)"
+ttt = @elapsed begin
+    streamflows, river_states =
+        compute_streamflow(initial_window, river_model, env, data_end_date)
 end
+@info "Complete. Time taken: $ttt"
+
+#  save data
+JLD2.save(
+    joinpath(output_dir, "streamflow_history$(history_length).jld2"),
+    "streamflows",
+    streamflows,
+    "river_states",
+    river_states,
+)
+## load data with
+# Using ClimaRivers, JLD2
+# load("filepath")

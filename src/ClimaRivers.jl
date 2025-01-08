@@ -6,8 +6,8 @@ using LinearAlgebra,
 
 # includes
 include("Environments.jl")
-include("States.jl")
 include("RiverModels.jl")
+include("States.jl")
 include("Routing.jl")
 include("MizurouteV1.jl")
 end # module ClimaRivers
