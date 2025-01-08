@@ -17,7 +17,7 @@ end
     FT = Float32
     shape = FT(1.5)
     timescale = FT(1.0)
-    t_max_hs = FT(60.0)
+    t_max_hs = 60
     slope1 = MizurouteHillslopeV1(shape, timescale, t_max_hs)
     slope2 = MizurouteHillslopeV1{FT}()
     @test slope1.shape == slope2.shape
@@ -30,7 +30,7 @@ end
     FT = Float64
     wave_velocity = FT(1.5 * 86400)
     diffusivity = FT(800 * 86400)
-    t_max_ch = FT(120.0)
+    t_max_ch = 120
     channel1 = MizurouteChannelV1(wave_velocity, diffusivity, t_max_ch)
     channel2 = MizurouteChannelV1{FT}()
     @test channel1.wave_velocity == channel2.wave_velocity

@@ -27,7 +27,7 @@ function compute_streamflow(
         push!(streamflows, compute_streamflow(river_state, env))
         date_window = iterate(date_window)
     end
-    
+
     return streamflows, river_states
 end
 
@@ -56,7 +56,7 @@ function compute_river_state(
         new_channel_state,
         date_window,
     )
-   
+
 end
 
 """
@@ -82,13 +82,21 @@ function compute_hillslope_state(
 
     start_date = date_window.start_date
     end_date = date_window.end_date
+    window_length = end_date - start_date
 
     all_basin_ids = static_env.basin_ids
     attributes_df = static_env.attributes
 
     a, θ = hillslope_model.shape, hillslope_model.timescale
     t_max = hillslope_model.t_max
-
+    if window_length < Day(t_max)
+        throw(
+            ArgumentError(
+                "`DateWindow` length must exceed `HillslopeModel.t_max`.
+\n Instead, received length $(window_length) and t_max $(t_max) (days)",
+            ),
+        )
+    end
     distribution = [
         (t^(a - 1) * exp(-t / θ)) / (θ^a * SpecialFunctions.gamma(a)) for
         t in 0:(t_max - 1)
@@ -181,11 +189,20 @@ function compute_channel_state(
     all_basin_ids = static_env.basin_ids
     attributes_df = static_env.attributes
 
+    start_date = date_window.start_date
     end_date = date_window.end_date
+    window_length = (end_date - start_date)
 
     C, D = channel_model.wave_velocity, channel_model.diffusivity
     t_max = channel_model.t_max
-
+    if window_length < Day(t_max)
+        throw(
+            ArgumentError(
+                "`DateWindow` length must exceed `ChannelModel.t_max`.
+\n Instead, received length $(window_length) and t_max $(t_max) (days)",
+            ),
+        )
+    end
     # Iterate over basins in the given routing level
     new_state = Dict(eachrow([all_basin_ids zeros(length(all_basin_ids))])) # id -> 0.0  
     for basin_id in all_basin_ids
@@ -218,11 +235,11 @@ function compute_channel_state(
             x = dist[1]
             distribution = [
                 x / (2 * t * sqrt(π * D * t)) *
-                exp(-((C * t - x)^2 / (4 * D * t))) for
-                t in 1:min(t_max, length(up_timeseries))
+                exp(-((C * t - x)^2 / (4 * D * t))) for t in 1:t_max
             ]
 
-            streamflow = dot(up_q[:], distribution[end:-1:1]) # q(t) = sum(q(s)*dist(t-s))
+            streamflow =
+                dot(up_q[(end - t_max + 1):end], distribution[end:-1:1]) # q(t) = sum(q(s)*dist(t-s))
 
             new_state[basin_id] += streamflow # get final streamflow
         end
@@ -260,7 +277,11 @@ function compute_streamflow(
     river_state::RS,
     static_env::SE,
     dynamic_env::DE,
-) where {RS <: HillslopeChannelRiverState, SE <: StaticEnvironment, DE <: DynamicEnvironment}
+) where {
+    RS <: HillslopeChannelRiverState,
+    SE <: StaticEnvironment,
+    DE <: DynamicEnvironment,
+}
 
     output_dir = dynamic_env.output_dir
     all_basin_ids = static_env.basin_ids

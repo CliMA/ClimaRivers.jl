@@ -58,7 +58,7 @@ env = Environment(
 
 
 # River state loaded into csv files currently, placehodler variable
-history_length = 50 * Day(1)
+history_length = 120 * Day(1)
 @info "using history length $(history_length)"
 initial_window = DateWindow(
     start_date = data_start_date,
