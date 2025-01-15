@@ -31,6 +31,8 @@ struct StaticEnvironment{AV <: AbstractVector}
     attributes::DataFrame
     "Dictionary of pairs `(basin_id => basin_ids of direct upstream neighbours)`"
     graph_dict::Dict
+    "Vector for calcuating hillslope gamma distribution"
+    hillslope_distribution::AV
 end
 
 """
@@ -42,7 +44,8 @@ function StaticEnvironment(
     basin_ids_file::AS1,
     attributes_file::AS2,
     graph_file::AS3,
-) where {AS1 <: AbstractString, AS2 <: AbstractString, AS3 <: AbstractString}
+    hillslope_distribution::AV,
+) where {AS1 <: AbstractString, AS2 <: AbstractString, AS3 <: AbstractString, AV <: AbstractVector}
 
     # create basin
     basin_ids = get_basin_list(basin_ids_file)
@@ -53,7 +56,11 @@ function StaticEnvironment(
     # create graph
     graph_dict = JSON.parsefile(graph_file)
 
+<<<<<<< Updated upstream
     return StaticEnvironment(basin_ids, attributes, graph_dict)
+=======
+    return StaticEnvironment(basin_ids, attributes, graph_dict, hillslope_distribution)
+>>>>>>> Stashed changes
 end
 
 # Dynamic Data Objects
@@ -116,6 +123,7 @@ function Environment(
     basin_ids_file::AS1,
     attributes_file::AS2,
     graph_file::AS3,
+    hillslope_distribution::AV,
     forcing_timeseries_files::AV,
     output_dir::AS4,
 ) where {
@@ -126,7 +134,7 @@ function Environment(
     AV <: AbstractVector,
 }
 
-    static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
+    static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file, hillslope_distribution)
     basin_ids = static_env.basin_ids
     dynamic_env =
         DynamicEnvironment(basin_ids, forcing_timeseries_files, output_dir)
@@ -146,6 +154,7 @@ function Environment(
     basin_ids_file::AS1,
     attributes_file::AS2,
     graph_file::AS3,
+    hillslope_distribution::AV,
     forcing_timeseries_dir::AS4,
     output_dir::AS5;
     forcing_timeseries_file_prefix = "basin_",
@@ -155,8 +164,9 @@ function Environment(
     AS3 <: AbstractString,
     AS4 <: AbstractString,
     AS5 <: AbstractString,
+    AV <: AbstractVector,
 }
-    static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
+    static_env = StaticEnvironment(basin_ids_file, attributes_file, graph_file, hillslope_distribution)
 
     basin_ids = static_env.basin_ids
     forcing_timeseries_files = [
@@ -181,22 +191,24 @@ function Environment(;
     basin_ids_file::Union{String, Nothing} = nothing,
     attributes_file::Union{String, Nothing} = nothing,
     graph_file::Union{String, Nothing} = nothing,
+    hillslope_distribution::Union{AbstractVector, Nothing} = nothing,
     forcing_timeseries_dir::Union{String, Nothing} = nothing,
     output_dir::Union{String, Nothing} = nothing,
     forcing_timeseries_file_prefix::String = "basin_",
     forcing_timeseries_files::Union{<:Vector{String}, Nothing} = nothing,
 ) # union with nothing is not allowed a "where" statement, see detect_unbound_args in Aqua.jl
-    arg_list_one = [basin_ids_file, attributes_file, graph_file, output_dir]
+    arg_list_one = [basin_ids_file, attributes_file, graph_file, output_dir, hillslope_distribution]
     any_nothing = any([isnothing(x) for x in arg_list_one])
     if any_nothing
         throw(
             ArgumentError(
                 """
 Environment must be built with values for all these keywords. But received:\n
-    basin_ids_file  = $(arg_list_one[1]), 
-    attributes_file = $(arg_list_one[2]), 
-    graph_file      = $(arg_list_one[3]), 
-    output_dir      = $(arg_list_one[4]),
+    basin_ids_file         = $(arg_list_one[1]), 
+    attributes_file        = $(arg_list_one[2]), 
+    graph_file             = $(arg_list_one[3]), 
+    output_dir             = $(arg_list_one[4]),
+    hillslope_distribution = $(arg_list_one[5]),
 """,
             ),
         )
@@ -220,6 +232,7 @@ Environment must be built with values for all these keywords. But received:\n
             basin_ids_file,
             attributes_file,
             graph_file,
+            hillslope_distribution,
             forcing_timeseries_files,
             output_dir,
         )
@@ -228,6 +241,7 @@ Environment must be built with values for all these keywords. But received:\n
             basin_ids_file,
             attributes_file,
             graph_file,
+            hillslope_distribution,
             forcing_timeseries_dir,
             output_dir,
             forcing_timeseries_file_prefix = forcing_timeseries_file_prefix,

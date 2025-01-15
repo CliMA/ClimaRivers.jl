@@ -1,5 +1,9 @@
 using ClimaRivers
+<<<<<<< Updated upstream
 using JSON, Dates
+=======
+using JSON, Dates, JLD2, SpecialFunctions
+>>>>>>> Stashed changes
 
 # build hillslope model
 hillslope = MizurouteHillslopeV1{Float64}()
@@ -25,6 +29,15 @@ basin_ids_file = joinpath(
 attributes_file =
     joinpath(data_file_path, "attributes", "attributes_lv05", "attributes.csv")
 
+# hillslope distribtuions
+a = hillslope.shape
+θ = hillslope.timescale
+t_max_hillslope = hillslope.t_max
+hillslope_distribution = [
+    (t^(a - 1) * exp(-t / θ)) / (θ^a * SpecialFunctions.gamma(a)) for
+    t in 0:(t_max_hillslope - 1)
+]
+ 
 # files for dynamic environment
 forcing_timeseries_dir =
     joinpath(data_file_path, "timeseries", "timeseries_lv05")
@@ -40,6 +53,7 @@ env = Environment(
     basin_ids_file = basin_ids_file,
     attributes_file = attributes_file,
     graph_file = graph_file,
+    hillslope_distribution = hillslope_distribution,
     forcing_timeseries_dir = forcing_timeseries_dir,
     output_dir = output_dir,
     forcing_timeseries_file_prefix = "basin_",

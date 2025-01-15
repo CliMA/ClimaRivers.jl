@@ -11,9 +11,22 @@ function compute_streamflow!(
     env::E,
     start_date::Date,
     end_date::Date,
-) where {RS <: RiverState, HCM <: HillslopeChannelRiverModel, E <: Environment}
-    update_state!(river_state, river_model, env, start_date, end_date)
-    return compute_streamflow(river_state, env)
+) where {HCM <: HillslopeChannelRiverModel, E <: Environment}
+
+    date_window = initial_date_window
+    river_states = []
+    streamflows = []
+    @info "enter computer_streamflow()"
+    while date_window.end_date <= end_date
+        # @info "computing streamflow over window [$(date_window.start_date),$(date_window.end_date)]"
+        river_state = compute_river_state(date_window, river_model, env)
+        push!(river_states, river_state)
+        streamflow = compute_streamflow(river_state, env)
+        push!(streamflows, streamflow)
+        date_window = iterate(date_window)
+    end
+
+    return streamflows, river_states
 end
 
 function update_state!(
@@ -64,14 +77,22 @@ function update_state_from_hillslope!(
 
     all_basin_ids = static_env.basin_ids
     attributes_df = static_env.attributes
+    distribtuion = static_env.hillslope_distribution
 
-    a, θ = hillslope_model.shape, hillslope_model.timescale
+    # a, θ = hillslope_model.shape, hillslope_model.timescale
     t_max = hillslope_model.t_max
-
-    distribution = [
-        (t^(a - 1) * exp(-t / θ)) / (θ^a * SpecialFunctions.gamma(a)) for
-        t in 0:(t_max - 1)
-    ]
+    if window_length < Day(t_max)
+        throw(
+            ArgumentError(
+                "`DateWindow` length must exceed `HillslopeModel.t_max`.
+\n Instead, received length $(window_length) and t_max $(t_max) (days)",
+            ),
+        )
+    end
+    # distribution = [
+    #     (t^(a - 1) * exp(-t / θ)) / (θ^a * SpecialFunctions.gamma(a)) for
+    #     t in 0:(t_max - 1)
+    # ]
 
     for basin_id in all_basin_ids
         timeseries_df = forcing_timeseries[basin_id]
@@ -159,6 +180,11 @@ function update_state_from_channel!(
     graph_dict = static_env.graph_dict
     all_basin_ids = static_env.basin_ids
     attributes_df = static_env.attributes
+    distribution = static_env.channel_distribution
+
+    start_date = date_window.start_date
+    end_date = date_window.end_date
+    window_length = (end_date - start_date)
 
     C, D = channel_model.wave_velocity, channel_model.diffusivity
     t_max = channel_model.t_max
@@ -202,10 +228,10 @@ function update_state_from_channel!(
 
             # Generate the h(dist,t) function values
             x = dist[1]
-            distribution = [
-                x / (2 * t * sqrt(π * D * t)) *
-                exp(-((C * t - x)^2 / (4 * D * t))) for t in 1:t_max
-            ]
+            # distribution = [
+            #     x / (2 * t * sqrt(π * D * t)) *
+            #     exp(-((C * t - x)^2 / (4 * D * t))) for t in 1:t_max
+            # ]
 
             # perform convolution
             streamflow[:, 1] =
