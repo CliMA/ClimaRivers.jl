@@ -1,4 +1,5 @@
 using Test
+using JLD2
 using ClimaRivers #(gather up the exported functions and structs for use in this scope)
 
 @testset "Hillslope channel model tests" begin
@@ -40,7 +41,6 @@ end
 end
 
 @testset "Routing Tests" begin
-    # can be example mad eup solutions, get edge cases
     graph_dict =
         Dict("1" => [], "2" => [], "3" => [], "4" => [1, 2], "5" => [3, 4])
     graph_dict = Dict{String, Any}(graph_dict)
@@ -50,7 +50,16 @@ end
     @test sort(upstream1) == []
     @test sort(upstream4) == [1, 2]
     @test sort(upstream5) == [1, 2, 3, 4]
+end
 
+@testset "Small Example Tests" begin
     # test running of mini test to make sure output is correct
     # can use small chunk of time 2-10 days or can adjust t_max to be like 25
+    data_file_path = joinpath(@__DIR__, "..", "mini_data", "routing")
+    @info "reading data files from $(data_file_path)"
+    simulation_file = joinpath(data_file_path, "simulations", "simulations_lv05", "gamma_IRF", "streamflow_history6 days.jld2")
+    file = jldopen(simulation_file, "r")  
+    my_array = file["streamflows"] 
+    print(my_array) 
+    close(file) 
 end
