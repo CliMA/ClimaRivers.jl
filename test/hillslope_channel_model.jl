@@ -59,7 +59,14 @@ end
     @info "reading data files from $(data_file_path)"
     simulation_file = joinpath(data_file_path, "simulations", "simulations_lv05", "gamma_IRF", "streamflow_history6 days.jld2")
     file = jldopen(simulation_file, "r")  
-    my_array = file["streamflows"] 
-    print(my_array) 
+    streamflow = file["streamflows"] 
     close(file) 
+    expected_streamflows = Dict(
+        1.0514351e9 => 0.1681771926595176,
+        1.05146043e9 => 9.439266521834611,
+        1.05142958e9 => 80.04636704743433,
+        1.05143511e9 => 4.791551273615758,
+        1.05142965e9 => 133.05341709808118
+    )
+    @test streamflow[end] == expected_streamflows
 end
