@@ -111,16 +111,16 @@ function compute_hillslope_state(
     timeseries_df = forcing_timeseries[all_basin_ids[1]]
     tbl = Tables.columntable(timeseries_df)
     idx_dates = in(date_set).(tbl.date) # bottleneck, but only call once for all basins
-    
+
     for basin_id in all_basin_ids
         timeseries_df = forcing_timeseries[basin_id]
         tbl = Tables.columntable(timeseries_df)
-                
+
         basin_area =
             attributes_df[attributes_df.HYBAS_ID .== basin_id, :area][1]
         runoff =
-            (tbl.sro_sum[idx_dates] .+ tbl.ssro_sum[idx_dates]) .*
-            basin_area ./ day_to_s .* km²_to_m²
+            (tbl.sro_sum[idx_dates] .+ tbl.ssro_sum[idx_dates]) .* basin_area ./
+            day_to_s .* km²_to_m²
 
         streamflow = DSP.conv(runoff, distribution)[1:size(runoff)[1], :][:]
 
