@@ -20,6 +20,7 @@ function compute_streamflow(
     date_window = initial_date_window
     river_states = []
     streamflows = []
+
     while date_window.end_date <= end_date
         # @info "computing streamflow over window [$(date_window.start_date),$(date_window.end_date)]"
         river_state = compute_river_state(date_window, river_model, env)
@@ -104,14 +105,20 @@ function compute_hillslope_state(
 
     new_state =
         Dict(eachrow([all_basin_ids repeat([[NaN]], length(all_basin_ids))])) # id -> vector{Float64}}  
+
+    date_set = Set(get_all_dates(date_window))
     for basin_id in all_basin_ids
         timeseries_df = forcing_timeseries[basin_id]
+
+        # MUCH faster than row -> start_date <= row[:date] <= end_date
+        # Still bottleneck of code
         filtered_df =
-            filter(row -> start_date <= row[:date] <= end_date, timeseries_df)
+           filter(:date => in(date_set), timeseries_df);
+
         basin_area =
             attributes_df[attributes_df.HYBAS_ID .== basin_id, :area][1]
         runoff =
-            (filtered_df[:, :sro_sum] .+ filtered_df[:, :ssro_sum]) .*
+            (filtered_df[!, :sro_sum] .+ filtered_df[!, :ssro_sum]) .*
             basin_area ./ day_to_s .* km²_to_m²
 
         streamflow = DSP.conv(runoff, distribution)[1:size(runoff)[1], :][:]
