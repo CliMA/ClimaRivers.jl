@@ -107,18 +107,19 @@ function compute_hillslope_state(
         Dict(eachrow([all_basin_ids repeat([[NaN]], length(all_basin_ids))])) # id -> vector{Float64}}  
 
     date_set = Set(get_all_dates(date_window))
+    # convert to column table to get row indices [MUCH faster than filtering the DF directly]
+    timeseries_df = forcing_timeseries[all_basin_ids[1]]
+    tbl = Tables.columntable(timeseries_df)
+    idx_dates = in(date_set).(tbl.date) # bottleneck, but only call once for all basins
+    
     for basin_id in all_basin_ids
         timeseries_df = forcing_timeseries[basin_id]
-
-        # MUCH faster than row -> start_date <= row[:date] <= end_date
-        # Still bottleneck of code
-        filtered_df =
-           filter(:date => in(date_set), timeseries_df);
-
+        tbl = Tables.columntable(timeseries_df)
+                
         basin_area =
             attributes_df[attributes_df.HYBAS_ID .== basin_id, :area][1]
         runoff =
-            (filtered_df[!, :sro_sum] .+ filtered_df[!, :ssro_sum]) .*
+            (tbl.sro_sum[idx_dates] .+ tbl.ssro_sum[idx_dates]) .*
             basin_area ./ day_to_s .* km²_to_m²
 
         streamflow = DSP.conv(runoff, distribution)[1:size(runoff)[1], :][:]
