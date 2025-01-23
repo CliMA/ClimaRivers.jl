@@ -79,7 +79,7 @@ end
     # Test compute_river_state()
     initial_window, river_model, env, data_end_date, _ = test_run_init()
 
-    ## compute_hillslope_state()
+    ## Test compute_hillslope_state() for initial window
     hillslope_model = river_model.hillslope_model
     @test compute_hillslope_state(initial_window, hillslope_model, env) ==
           compute_hillslope_state(
@@ -88,12 +88,28 @@ end
         env.static_env,
         env.dynamic_env,
     )
-    # new_state = compute_hillslope_state(initial_window, river_model, env)
+    true_hillslope_state = Dict(1051435100 => [0.0, 0.0020499191015790758, 0.010452984693913786, 0.04126935527573286, 0.19083161063516876, 0.17075762060905167, 0.1804893760599954],
+        1051460430 => [0.0, 0.16464777031959082, 0.16687127747327474, 0.45440395874751704, 1.0728691978019544, 6.413658520862648, 4.723755298164256],
+        1051429580 => [3.552713678800501e-15, 30.01377540496592, 25.81356016324419, 49.27790306817931, 75.49193129565366, 33.09285601118408, 35.60239021729076],
+        1051435110 => [-2.220446049250313e-16, 1.9228093083301891, 1.578095249309317, 1.658213104150694, 4.023195942893823, 5.03492062653842, 2.571851681460489],
+        1051429650 => [3.552713678800501e-15, 29.9487620429082, 51.16449376760788, 66.3174109253273, 177.26668413371624, 69.81683649526752, 86.90268747602767]
+        )
+    new_hillslope_state = compute_hillslope_state(initial_window, hillslope_model, env)
+    @test new_hillslope_state == true_hillslope_state
 
+    ## Test compute_channel_state() for initial window
+    channel_model = river_model.channel_model
+    @test compute_channel_state(new_hillslope_state, initial_window, channel_model, env) ==
+          compute_channel_state(new_hillslope_state, initial_window, channel_model, env.static_env, env.dynamic_env)
 
-
-    ## computer_channel_state()
-
+    true_channel_state = Dict(1.0514351e9 => 3.510632085989178e-10, 
+                            1.05146043e9 => 21.415229895931486, 
+                            1.05142958e9 => 0.0, 
+                            1.05143511e9 => 0.0, 
+                            1.05142965e9 => 0.0
+                            )
+    new_channel_state = compute_channel_state(new_hillslope_state, initial_window, channel_model, env)
+    @test new_channel_state == true_channel_state
 end
 
 @testset "Small Example Tests" begin
