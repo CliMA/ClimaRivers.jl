@@ -26,8 +26,12 @@ function test_run_init()
         "routing_lvs_lv05",
         "all_basin_ids.txt",
     )
-    attributes_file =
-        joinpath(data_file_path, "attributes", "attributes_lv05", "attributes.csv")
+    attributes_file = joinpath(
+        data_file_path,
+        "attributes",
+        "attributes_lv05",
+        "attributes.csv",
+    )
 
 
     # files for dynamic environment
@@ -72,12 +76,22 @@ function test_run_init()
     return initial_window, river_model, env, data_end_date, history_length
 end
 
-function test_run_compute(initial_window, river_model, env, data_end_date, history_length)
+function test_run_compute(
+    initial_window,
+    river_model,
+    env,
+    data_end_date,
+    history_length,
+)
     ## full-timeseries model, predicts all states at once
     @info "computing streamflow over network $(history_length)"
     ttt = @elapsed begin
-        streamflows, river_states =
-            compute_streamflow(initial_window, river_model, env, data_end_date)
+        streamflows, river_states = compute_streamflow(
+            initial_window,
+            river_model,
+            env,
+            data_end_date,
+        )
     end
     @info "Complete. Time taken: $ttt"
 
@@ -85,7 +99,14 @@ function test_run_compute(initial_window, river_model, env, data_end_date, histo
 end
 
 function test_run_full()
-    initial_window, river_model, env, data_end_date, history_length = test_run_init()
-    streamflows, river_states = test_run_compute(initial_window, river_model, env, data_end_date, history_length)
+    initial_window, river_model, env, data_end_date, history_length =
+        test_run_init()
+    streamflows, river_states = test_run_compute(
+        initial_window,
+        river_model,
+        env,
+        data_end_date,
+        history_length,
+    )
     return streamflows, river_states
 end

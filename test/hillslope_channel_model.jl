@@ -75,15 +75,21 @@ end
     @test sort(upstream4) == [1, 2]
     @test sort(upstream5) == [1, 2, 3, 4]
 
-    
+
     # Test compute_river_state()
     initial_window, river_model, env, data_end_date, _ = test_run_init()
-    
+
     ## compute_hillslope_state()
     hillslope_model = river_model.hillslope_model
-    @test compute_hillslope_state(initial_window, hillslope_model, env) == compute_hillslope_state(initial_window, hillslope_model, env.static_env, env.dynamic_env)
+    @test compute_hillslope_state(initial_window, hillslope_model, env) ==
+          compute_hillslope_state(
+        initial_window,
+        hillslope_model,
+        env.static_env,
+        env.dynamic_env,
+    )
     # new_state = compute_hillslope_state(initial_window, river_model, env)
-    
+
 
 
     ## computer_channel_state()
@@ -98,7 +104,7 @@ end
         1.05146043e9 => 9.439266521834611,
         1.05142958e9 => 80.04636704743433,
         1.05143511e9 => 4.791551273615758,
-        1.05142965e9 => 133.05341709808118
+        1.05142965e9 => 133.05341709808118,
     )
     @test streamflows[end] == expected_streamflows
 end
