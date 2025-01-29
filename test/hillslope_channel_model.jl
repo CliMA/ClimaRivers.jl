@@ -185,6 +185,7 @@ end
         1.05143511e9 => 2.571851681460489,
         1.05142965e9 => 86.90268747602767,
     )
+    # change to get approx equals for floating types for each basin specifically
     @test streamflow == test_streamflow
 end
 
