@@ -124,10 +124,6 @@ function compute_hillslope_state(
         runoff =
             (tbl.sro_sum[idx_dates] .+ tbl.ssro_sum[idx_dates]) .* basin_area ./
             day_to_s .* km²_to_m²
-<<<<<<< HEAD
-
-=======
->>>>>>> 2dcd00a (format)
 
         streamflow = DSP.conv(runoff, distribution)[1:size(runoff)[1], :][:]
 
