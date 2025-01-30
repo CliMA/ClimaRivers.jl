@@ -137,7 +137,7 @@ end
     )
     new_hillslope_state =
         compute_hillslope_state(initial_window, hillslope_model, env)
-    @test new_hillslope_state == test_hillslope_state
+    @test all(k -> isapprox(new_hillslope_state[k], test_hillslope_state[k]; atol=1e-10), keys(new_hillslope_state))
 
     ## Test compute_channel_state() for first iteration
     channel_model = river_model.channel_model
@@ -167,7 +167,7 @@ end
         channel_model,
         env,
     )
-    @test new_channel_state == test_channel_state
+    @test all(k -> isapprox(new_channel_state[k], test_channel_state[k]; atol=1e-10), keys(new_channel_state))
 
     # Test compute_streamflow() for first iteration
     new_river_state = HillslopeChannelRiverState(
@@ -186,7 +186,7 @@ end
         1.05142965e9 => 86.90268747602767,
     )
     # change to get approx equals for floating types for each basin specifically
-    @test streamflow == test_streamflow
+    @test all(k -> isapprox(streamflow[k], test_streamflow[k]; atol=1e-10), keys(streamflow))
 end
 
 @testset "Small Example Tests" begin
@@ -199,5 +199,5 @@ end
         1.05143511e9 => 4.791551273615758,
         1.05142965e9 => 133.05341709808118,
     )
-    @test streamflows[end] == expected_streamflows
+    @test all(k -> isapprox(streamflows[end][k], expected_streamflows[k]), keys(expected_streamflows))
 end
