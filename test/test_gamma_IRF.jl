@@ -44,7 +44,7 @@ function test_run_init()
         mkpath(output_dir)
     end
 
-    # data information
+    # date information
     data_start_date = Date("1996-01-01", "yyyy-mm-dd")
     data_end_date = Date("1996-01-10", "yyyy-mm-dd") # of entire simulation
     data_step = Day(1)

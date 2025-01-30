@@ -1,5 +1,6 @@
 using Test
 using ClimaRivers #(gather up the exported functions and structs for use in this scope)
+using CSV, DataFrames
 
 include("test_gamma_IRF.jl")
 
@@ -59,6 +60,104 @@ end
         date_step = Day(1),
     )
     @test next_dw == true_next_dw
+end
+
+@testset "Environment Tests" begin
+    # Test functions for environment structs found in Evironments.jl
+    data_file_path = joinpath(@__DIR__, "..", "mini_data", "routing")
+
+    # Static Environment Files
+    basin_ids_file = joinpath(
+        data_file_path,
+        "routing_lvs",
+        "routing_lvs_lv05",
+        "all_basin_ids.txt",
+    )
+    attributes_file = joinpath(
+        data_file_path,
+        "attributes",
+        "attributes_lv05",
+        "attributes.csv",
+    )
+    graph_file = joinpath(data_file_path, "graphs", "graph_lv05.json")
+
+    # Dynamic Environment Files
+    forcing_timeseries_dir =
+        joinpath(data_file_path, "timeseries", "timeseries_lv05")
+    output_dir =
+        joinpath(data_file_path, "simulations", "simulations_lv05", "gamma_IRF")
+    if !isdir(output_dir)
+        mkpath(output_dir)
+    end
+
+    # Date information
+    data_start_date = Date("1996-01-01", "yyyy-mm-dd")
+    data_end_date = Date("1996-01-10", "yyyy-mm-dd") # of entire simulation
+    data_step = Day(1)
+    data_date_window = DateWindow(
+        start_date = data_start_date,
+        end_date = data_end_date,
+        date_step = data_step,
+    )
+
+    # Compare static env constructors
+    basin_ids = get_basin_list(basin_ids_file)
+    attributes = CSV.read(attributes_file, DataFrame)
+    graph_dict = JSON.parsefile(graph_file)
+    static_env_fields = StaticEnvironment(basin_ids, attributes, graph_dict)
+    
+    static_env_signature = StaticEnvironment(basin_ids_file, attributes_file, graph_file)
+    
+    @test static_env_fields.basin_ids == static_env_signature.basin_ids
+    @test static_env_fields.attributes == static_env_signature.attributes
+    @test static_env_fields.graph_dict == static_env_signature.graph_dict
+
+    # Compare dynmaic env constructors
+    forcing_timeseries_file_prefix = "basin_"
+    forcing_timeseries_files = [
+        joinpath(
+            forcing_timeseries_dir,
+            forcing_timeseries_file_prefix * "$(id).csv",
+        ) for id in basin_ids
+    ]
+    dynamic_env_signature = DynamicEnvironment(
+        basin_ids,
+        forcing_timeseries_files,
+        data_date_window,
+        output_dir,
+    )
+
+    forcing_timeseries_array = []
+    for file in forcing_timeseries_files
+        push!(forcing_timeseries_array, CSV.read(file, DataFrame))
+    end
+    forcing_timeseries = Dict(eachrow([basin_ids forcing_timeseries_array]))
+    dynamic_env_fields = DynamicEnvironment(forcing_timeseries, data_date_window, output_dir)
+
+    @test Set(keys(dynamic_env_signature.forcing_timeseries)) == Set(keys(dynamic_env_fields.forcing_timeseries))
+    @test dynamic_env_signature.date_window == dynamic_env_fields.date_window
+    @test dynamic_env_signature.output_dir == dynamic_env_fields.output_dir
+
+    # Compare environment constructors
+    env_signature = Environment(
+        basin_ids_file = basin_ids_file,
+        attributes_file = attributes_file,
+        graph_file = graph_file,
+        forcing_timeseries_dir = forcing_timeseries_dir,
+        date_window = data_date_window,
+        output_dir = output_dir,
+        forcing_timeseries_file_prefix = "basin_",
+    )
+
+    env_fields = Environment(static_env_fields, dynamic_env_fields)
+
+    @test env_fields.static_env.basin_ids == env_signature.static_env.basin_ids
+    @test env_fields.static_env.attributes == env_signature.static_env.attributes
+    @test env_fields.static_env.graph_dict == env_signature.static_env.graph_dict
+
+    @test Set(keys(env_fields.dynamic_env.forcing_timeseries)) == Set(keys(env_signature.dynamic_env.forcing_timeseries))
+    @test env_fields.dynamic_env.date_window == env_signature.dynamic_env.date_window
+    @test env_fields.dynamic_env.output_dir == env_signature.dynamic_env.output_dir
 end
 
 @testset "Routing Tests" begin
