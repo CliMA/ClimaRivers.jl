@@ -5,7 +5,7 @@ import Base.iterate
 
 export StaticEnvironment, DynamicEnvironment, Environment
 export DateWindow
-export get_all_dates, iterate
+export get_all_dates, iterate, get_basin_list
 
 ## Auxiliary functions
 # function for reading basins from txt file into Vector{Int}

@@ -1,6 +1,9 @@
 # general methods for routing rivers
 export compute_streamflow,
-    compute_river_state, compute_channel_state, compute_hillslope_state
+    compute_river_state,
+    compute_channel_state,
+    compute_hillslope_state,
+    get_upstream_basins
 
 using CSV, DataFrames, Dates, DSP, SpecialFunctions
 
@@ -121,7 +124,6 @@ function compute_hillslope_state(
         runoff =
             (tbl.sro_sum[idx_dates] .+ tbl.ssro_sum[idx_dates]) .* basin_area ./
             day_to_s .* km²_to_m²
-
 
         streamflow = DSP.conv(runoff, distribution)[1:size(runoff)[1], :][:]
 
