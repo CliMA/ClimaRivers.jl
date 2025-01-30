@@ -3,7 +3,13 @@ using ClimaRivers
 using JLD2, Plots
 
 data_file_path = joinpath(@__DIR__, "..", "..", "mini_data", "routing")
-simulation_result_file = joinpath(data_file_path, "simulations", "simulations_lv05", "gamma_IRF", "streamflow_history120 days.jld2")
+simulation_result_file = joinpath(
+    data_file_path,
+    "simulations",
+    "simulations_lv05",
+    "gamma_IRF",
+    "streamflow_history120 days.jld2",
+)
 data = JLD2.load(simulation_result_file)
 all_streamflows = data["streamflows"]
 
@@ -29,16 +35,21 @@ end
 
 time_steps = 1:length(all_streamflows)
 
-p = plot(time_steps, streamflow_1, label="Basin $(basin_ids[1])", linewidth=2)
-plot!(time_steps, streamflow_2, label="Basin $(basin_ids[2])", linewidth=2)
-plot!(time_steps, streamflow_3, label="Basin $(basin_ids[3])", linewidth=2)
-plot!(time_steps, streamflow_4, label="Basin $(basin_ids[4])", linewidth=2)
-plot!(time_steps, streamflow_5, label="Basin $(basin_ids[5])", linewidth=2)
+p = plot(
+    time_steps,
+    streamflow_1,
+    label = "Basin $(basin_ids[1])",
+    linewidth = 2,
+)
+plot!(time_steps, streamflow_2, label = "Basin $(basin_ids[2])", linewidth = 2)
+plot!(time_steps, streamflow_3, label = "Basin $(basin_ids[3])", linewidth = 2)
+plot!(time_steps, streamflow_4, label = "Basin $(basin_ids[4])", linewidth = 2)
+plot!(time_steps, streamflow_5, label = "Basin $(basin_ids[5])", linewidth = 2)
 
 xlabel!("Time")
 ylabel!("Streamflow")
 title!("Streamflow Over Time for 5 Basins")
-plot!(legend=:topleft)
+plot!(legend = :topleft)
 
 output_file = joinpath(@__DIR__, "streamflow_plot.png")
 savefig(p, output_file)
