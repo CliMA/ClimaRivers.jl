@@ -1,5 +1,5 @@
 using ClimaRivers
-using JLD2, Plots, CSV, DataFrames
+using JLD2, Plots, CSV, DataFrames, Statistics
 
 # Script for visualizing streamflow plots, and streamflow vs runoff plots
 
@@ -25,6 +25,11 @@ basin_ids_str =
     ["1051429580", "1051429650", "1051435100", "1051435110", "1051460430"]  # mini data set
 sort!(basin_ids_str)
 
+# Load Attribute Data
+attribute_file =
+    joinpath(data_file_path, "attributes", "attributes_lv05", "attributes.csv")
+attributes_df = CSV.read(attribute_file, DataFrame)
+
 streamflows = Dict(
     basin_id => Vector{Float64}(undef, length(all_streamflows)) for
     basin_id in basin_ids_str
@@ -49,12 +54,24 @@ for basin_id in basin_ids_str
     timeseries_file = joinpath(timeseries_dir, "basin_$basin_id.csv")
     df = CSV.read(timeseries_file, DataFrame)
 
-    df.sro_sum = coalesce.(df.sro_sum, 0.0)
-    df.ssro_sum = coalesce.(df.ssro_sum, 0.0)
-
     df.total_runoff = df.sro_sum .+ df.ssro_sum
 
+    day_to_s = 86400
+    km²_to_m² = 1000000
+    int_id = tryparse(Int64, basin_id)
+    basin_area = attributes_df[attributes_df.HYBAS_ID .== int_id, :area][1]
+    df.total_runoff = df.total_runoff .* basin_area ./ day_to_s .* km²_to_m²
+
     df = df[start_index:end, :]
+
+    min_runoff = minimum(df.total_runoff)
+    max_runoff = maximum(df.total_runoff)
+    mean_runoff = mean(df.total_runoff)
+
+    println("Min Total Runoff: ", min_runoff)
+    println("Max Total Runoff: ", max_runoff)
+    println("Mean Total Runoff: ", mean_runoff)
+
     runoffs[basin_id] = df.total_runoff
 end
 
@@ -71,12 +88,18 @@ for basin_id in basin_ids_str
 
     plot!(
         plt,
-        time_steps,
-        streamflows[basin_id],
+        time_steps[(end - 730):end],
+        streamflows[basin_id][(end - 730):end],
         label = "Streamflow",
         linewidth = 2,
     )
-    plot!(plt, time_steps, runoffs[basin_id], label = "Runoff", linewidth = 2)
+    plot!(
+        plt,
+        time_steps[(end - 730):end],
+        runoffs[basin_id][(end - 730):end],
+        label = "Runoff",
+        linewidth = 2,
+    )
 
     plot_file = joinpath(@__DIR__, "streamflow_vs_runoff_basin_$basin_id.png")
     savefig(plt, plot_file)
@@ -96,8 +119,8 @@ p = plot(
 for basin_id in basin_ids_str
     plot!(
         p,
-        time_steps,
-        streamflows[basin_id],
+        time_steps[(end - 730):end],
+        streamflows[basin_id][(end - 730):end],
         label = "Basin $basin_id",
         linewidth = 2,
     )
