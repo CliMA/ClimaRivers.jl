@@ -81,6 +81,3 @@ JLD2.save(
     "river_states",
     river_states,
 )
-## load data with
-# Using ClimaRivers, JLD2
-# load("filepath")
