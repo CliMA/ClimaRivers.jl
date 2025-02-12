@@ -36,7 +36,7 @@ if !isdir(output_dir)
 end
 
 # data information
-data_start_date = Date("1996-01-01", "yyyy-mm-dd")
+data_start_date = Date("1990-01-01", "yyyy-mm-dd")
 data_end_date = Date("2014-12-31", "yyyy-mm-dd") # of entire simulation
 data_step = Day(1)
 data_date_window = DateWindow(
@@ -81,6 +81,3 @@ JLD2.save(
     "river_states",
     river_states,
 )
-## load data with
-# Using ClimaRivers, JLD2
-# load("filepath")
