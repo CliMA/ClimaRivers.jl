@@ -1,6 +1,8 @@
 using ClimaRivers
 using JSON, Dates, JLD2
 
+# Shallow dataset Run
+
 # build hillslope model
 hillslope = MizurouteHillslopeV1{Float64}()
 
@@ -11,7 +13,7 @@ channel = MizurouteChannelV1{Float64}()
 river_model = HillslopeChannelRiverModel(hillslope, channel)
 
 # build environment
-data_file_path = joinpath(@__DIR__, "..", "..", "data", "routing")
+data_file_path = joinpath(@__DIR__, "..", "..", "shallow_data", "routing")
 
 # files for static environment
 @info "reading data files from $(data_file_path)"
@@ -37,7 +39,7 @@ end
 
 # data information
 data_start_date = Date("1990-01-01", "yyyy-mm-dd")
-data_end_date = Date("2014-12-31", "yyyy-mm-dd") # of entire simulation
+data_end_date = Date("1990-06-30", "yyyy-mm-dd")
 data_step = Day(1)
 data_date_window = DateWindow(
     start_date = data_start_date,
