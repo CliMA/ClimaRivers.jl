@@ -73,7 +73,8 @@ ttt = @elapsed begin
     streamflows, river_states =
         compute_streamflow(initial_window, river_model, env, data_end_date)
 end
-@info "Complete. Time taken: $ttt"
+@info "Complete. Time taken: $(ttt))"
+@info "Complete. Time taken per day: $(ttt/length(streamflows))"
 
 #  save data
 JLD2.save(
