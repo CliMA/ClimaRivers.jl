@@ -16,20 +16,13 @@ if first_polygon isa Shapefile.Polygon
     lat_vals = [p.y for p in first_polygon.points]
 
     # Scatter plot of polygon points
-    scatter(
-        lon_vals,
-        lat_vals,
-        color = :blue,
-        marker = :circle,
-        markersize = 2,
-        alpha = 0.7,
-    )
+    plot(lat_vals, lon_vals)
     xlabel!("Longitude")
     ylabel!("Latitude")
-    title!("First Polygon Scatter Plot from Shapefile")
+    title!("First Polygon Plot from Shapefile")
 
     # Save the plot
-    savefig("first_polygon_scatter.png")
+    savefig("first_basin_shape.png")
 else
     println("The first geometry is not a Polygon.")
 end
