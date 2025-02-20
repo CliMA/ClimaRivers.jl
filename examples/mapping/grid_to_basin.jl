@@ -1,5 +1,4 @@
-using Distributed
-@everywhere using DataFrames, JSON, NetCDF, ProgressMeter, Shapefile, NCDatasets
+using DataFrames, JSON, NetCDF, ProgressMeter, Shapefile, NCDatasets
 
 # Added functions form geo_utils.jl
 """
@@ -56,7 +55,7 @@ function standard_longitudes!(longitudes::Vector{<:Real})
     end
 end
 
-@everywhere """
+"""
     subdivide_dataframe(df, num_parts)
 
 Subdivide a dataframe in an array of parts.
@@ -78,7 +77,7 @@ function subdivide_dataframe(df::DataFrame, num_parts::Int)
     return subdivisions
 end
 
-@everywhere """
+"""
     find_indices_within_range(values, min_value, max_value)
 
 Finds the indices of values within a specified range.
@@ -92,7 +91,7 @@ function find_indices_within_range(
     return indices
 end
 
-@everywhere """
+"""
     grid_points_to_basins(nc_file, shp_file, basin_id_field, output_file, do_monte_carlo=true, num_mc_exp=1000)
 """
 function grid_points_to_basins_in_parallel(
