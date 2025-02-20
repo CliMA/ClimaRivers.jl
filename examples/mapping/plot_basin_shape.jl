@@ -1,0 +1,28 @@
+using Shapefile, DataFrames, Plots
+
+# Observing the contents of the shape file
+
+# Load the shapefile
+shp_file = "/groups/esm/achiang/ClimaRivers.jl/data/source_data/BasinATLAS_v10_shp/BasinATLAS_v10_lev05.shp"
+shape_df = Shapefile.Table(shp_file) |> DataFrame
+
+select!(shape_df, [:geometry, :HYBAS_ID])
+
+first_polygon = shape_df.geometry[1]
+
+if first_polygon isa Shapefile.Polygon
+    # Get lat / lon values
+    lon_vals = [p.x for p in first_polygon.points]
+    lat_vals = [p.y for p in first_polygon.points]
+
+    # Scatter plot of polygon points
+    scatter(lon_vals, lat_vals, color=:blue, marker=:circle, markersize=2, alpha=0.7)
+    xlabel!("Longitude")
+    ylabel!("Latitude")
+    title!("First Polygon Scatter Plot from Shapefile")
+
+    # Save the plot
+    savefig("first_polygon_scatter.png")
+else
+    println("The first geometry is not a Polygon.")
+end
