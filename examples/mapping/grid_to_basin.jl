@@ -1,5 +1,60 @@
 using Distributed
-@everywhere using DataFrames, JSON, NetCDF, ProgressMeter, Shapefile
+@everywhere using DataFrames, JSON, NetCDF, ProgressMeter, Shapefile, NCDatasets
+
+# Added functions form geo_utils.jl
+"""
+    in_polygon(vertices, x, y)
+
+Checks if a point `(x, y)` is inside a polygon `(vertices)` using the ray casting algorithm.
+"""
+function in_polygon(vertices::Vector{Shapefile.Point}, x::Real, y::Real)
+    n = length(vertices)
+    inside = false
+    j = n
+    for i in 1:n
+        xi = vertices[i].x
+        yi = vertices[i].y
+        xj = vertices[j].x
+        yj = vertices[j].y
+        intersect =
+            ((yi > y) != (yj > y)) &&
+            (x < (xj - xi) * (y - yi) / (yj - yi) + xi)
+        if intersect
+            inside = !inside
+        end
+        j = i
+    end
+    return inside
+end
+
+"""
+    find_min_max_lon_lat(points, margin)
+
+Finds the minimum and maximum longitude and latitude values from a list of `points`.
+The `margin` is given to increase the range of the minimum and maximum.
+"""
+function find_min_max_lon_lat(points::Vector{Shapefile.Point}, margin::Real)
+    polygon_longitudes = [point.x for point in points]
+    polygon_latitudes = [point.y for point in points]
+
+    return minimum(polygon_longitudes) - margin,
+    maximum(polygon_longitudes) + margin,
+    minimum(polygon_latitudes) - margin,
+    maximum(polygon_latitudes) + margin
+end
+
+"""
+    standard_longitudes!(longitudes)
+
+Transforms an array of longitudes to the [-180,180] limit range.
+"""
+function standard_longitudes!(longitudes::Vector{<:Real})
+    for i in 1:length(longitudes)
+        if longitudes[i] > 180
+            longitudes[i] -= 360
+        end
+    end
+end
 
 @everywhere """
     subdivide_dataframe(df, num_parts)
@@ -53,9 +108,9 @@ function grid_points_to_basins_in_parallel(
 
     # Read the netCDF file
     dataset = NetCDF.open(nc_file)
-    longitudes = dataset["longitude"][:]
+    longitudes = dataset["geo_x"][:]  # Changed from "longitude" to "geo_x"
     standard_longitudes!(longitudes)
-    latitudes = dataset["latitude"][:]
+    latitudes = dataset["geo_y"][:]  # Changed from "latitude" to "geo_y"
 
     # Define constants for the Monte Carlo Experiments
     mc_proba = 1 / num_mc_exp
@@ -180,3 +235,26 @@ function grid_points_to_basins(
         1:1:num_parts,
     )
 end
+
+
+function main()
+    data_file_path = joinpath(@__DIR__, "..", "..", "data")
+    nc_file =
+        joinpath(data_file_path, "midway_data", "GRDC-Globe", "grdc-merged.nc")
+    shp_file = joinpath(
+        data_file_path,
+        "source_data",
+        "BasinATLAS_v10_shp",
+        "BasinATLAS_v10_lev05.shp",
+    )
+    basin_id_field = "HYBAS_ID"
+    output_dir = joinpath(@__DIR__, "test_output")
+    # grid_points_to_basins(nc_file, shp_file, basin_id_field, output_dir) # Runs for all files
+
+    # Open the NetCDF file
+    ds = Dataset(nc_file)
+    println("keys(ds): ", keys(ds))
+
+end
+
+main()

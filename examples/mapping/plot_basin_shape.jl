@@ -16,7 +16,14 @@ if first_polygon isa Shapefile.Polygon
     lat_vals = [p.y for p in first_polygon.points]
 
     # Scatter plot of polygon points
-    scatter(lon_vals, lat_vals, color=:blue, marker=:circle, markersize=2, alpha=0.7)
+    scatter(
+        lon_vals,
+        lat_vals,
+        color = :blue,
+        marker = :circle,
+        markersize = 2,
+        alpha = 0.7,
+    )
     xlabel!("Longitude")
     ylabel!("Latitude")
     title!("First Polygon Scatter Plot from Shapefile")
