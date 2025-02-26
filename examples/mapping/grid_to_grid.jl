@@ -1,1 +1,1 @@
-# Create Interpolation from ClimaLand to ERA5
+# Interpolate ERA5 grid to ClimaLand grid

@@ -1,4 +1,5 @@
-using DataFrames, JSON, NetCDF, ProgressMeter, Shapefile, NCDatasets, Distributed
+using DataFrames,
+    JSON, NetCDF, ProgressMeter, Shapefile, NCDatasets, Distributed
 
 # Added functions form geo_utils.jl
 """
@@ -213,7 +214,8 @@ function grid_points_to_basins(
 
     # Wrapper function 
     function grid_points_to_basins_in_parallel_wrapper(i)
-        output_file = joinpath(output_dir, "clima_dict" * lpad(i, 2, "0") * ".json")
+        output_file =
+            joinpath(output_dir, "clima_dict" * lpad(i, 2, "0") * ".json")
         grid_points_to_basins_in_parallel(
             nc_file,
             subdivisions[i],
@@ -251,7 +253,15 @@ function main()
     do_monte_carlo = true
     num_mc_exp = 1000
     num_parts = 8
-    grid_points_to_basins(nc_file, shp_file, basin_id_field, output_dir, do_monte_carlo, num_mc_exp, num_parts)
+    grid_points_to_basins(
+        nc_file,
+        shp_file,
+        basin_id_field,
+        output_dir,
+        do_monte_carlo,
+        num_mc_exp,
+        num_parts,
+    )
 end
 
 main()

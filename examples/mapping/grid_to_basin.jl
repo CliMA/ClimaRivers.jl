@@ -1,4 +1,5 @@
-using DataFrames, JSON, NetCDF, ProgressMeter, Shapefile, NCDatasets, Distributed
+using DataFrames,
+    JSON, NetCDF, ProgressMeter, Shapefile, NCDatasets, Distributed
 
 # Added functions form geo_utils.jl
 """
@@ -238,8 +239,13 @@ end
 
 function main()
     data_file_path = joinpath(@__DIR__, "..", "..", "data")
-    nc_file =
-        joinpath(data_file_path, "source_data", "era5", "globe_year_month", "era5_1990_01.nc")
+    nc_file = joinpath(
+        data_file_path,
+        "source_data",
+        "era5",
+        "globe_year_month",
+        "era5_1990_01.nc",
+    )
     shp_file = joinpath(
         data_file_path,
         "source_data",

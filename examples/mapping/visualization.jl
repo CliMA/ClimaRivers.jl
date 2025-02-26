@@ -1,0 +1,69 @@
+using JSON
+using Plots
+using NetCDF
+
+"""
+    standard_longitudes!(longitudes)
+
+Transforms an array of longitudes to the [-180,180] limit range.
+"""
+function standard_longitudes!(longitudes::Vector{<:Real})
+    for i in 1:length(longitudes)
+        if longitudes[i] > 180
+            longitudes[i] -= 360
+        end
+    end
+end
+
+# Function to read JSON files and plot the lat, lon coordinates
+function plot_lat_lon(json_paths::Vector{String}, nc_paths::Vector{String}, basin_id::String, output_file::String)
+    # Initialize plot
+    p = plot(xlabel="Longitude", ylabel="Latitude", title="Lat/Lon Coordinates")
+    
+    # Loop through each file and basin ID
+    for (json_path, nc_path) in zip(json_paths, nc_paths)
+        # Read the JSON file
+        json_data = JSON.parsefile(json_path)
+        basin_data = json_data[basin_id]
+
+        # Read the netCDF file
+        dataset = NetCDF.open(nc_path)
+        # era5: "longitude" & ClimaLand: "lon"
+        # era5: "latitude" & Climaland: "lat"
+        if nc_path == joinpath(data_file_path, "source_data", "era5", "globe_year_month", "era5_1990_01.nc")
+            longitudes = dataset["longitude"][:]
+            latitudes = dataset["latitude"][:]
+        else
+            longitudes = dataset["lon"][:]
+            latitudes = dataset["lat"][:]
+        end
+        standard_longitudes!(longitudes)
+        
+        # Extract lat, lon coordinates and opacities
+        lon_vals = []
+        lat_vals = []
+        opacities = []
+        for value in values(basin_data)
+            push!(lon_vals, longitudes[value[1]])
+            push!(lat_vals, latitudes[value[2]])
+            push!(opacities, value[3])
+        end
+        # Overlay the coordinates on the plot with opacity
+        scatter!(p, lon_vals, lat_vals, alpha=opacities)
+    end
+    
+    # Save the plot as a PNG file
+    savefig(p, output_file)
+end
+
+# Example usage
+data_file_path = joinpath(@__DIR__, "..", "..", "data")
+output_dir = joinpath(data_file_path, "midway_data", "mapping_dicts")
+era5_json_path = joinpath(output_dir, "dict02.json")
+era5_nc_path = joinpath(data_file_path, "source_data", "era5", "globe_year_month", "era5_1990_01.nc")
+clima_json_path = joinpath(output_dir, "clima_dict01.json")
+clima_nc_path = joinpath(data_file_path, "source_data", "ClimaLand", "sr_1M_average.nc")
+output_file = joinpath(@__DIR__, "lat_lon_plot.png")
+
+# Plot the lat, lon coordinates from the JSON files and save as PNG
+plot_lat_lon([era5_json_path, clima_json_path], [era5_nc_path, clima_nc_path], "1050014490", output_file)
