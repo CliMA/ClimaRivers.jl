@@ -107,9 +107,9 @@ function grid_points_to_basins_in_parallel(
 
     # Read the netCDF file
     dataset = NetCDF.open(nc_file)
-    longitudes = dataset["longitude"][:]  # era5: "longitude" & ClimaLand: "lon"
+    longitudes = dataset["lon"][:]  # era5: "longitude" & ClimaLand: "lon"
     standard_longitudes!(longitudes)
-    latitudes = dataset["latitude"][:]  # era5: "latitude" & Climaland: "lat"
+    latitudes = dataset["lat"][:]  # era5: "latitude" & Climaland: "lat"
 
     # Define constants for the Monte Carlo Experiments
     mc_proba = 1 / num_mc_exp
@@ -213,7 +213,7 @@ function grid_points_to_basins(
 
     # Wrapper function 
     function grid_points_to_basins_in_parallel_wrapper(i)
-        output_file = joinpath(output_dir, "dict" * lpad(i, 2, "0") * ".json")
+        output_file = joinpath(output_dir, "clima_dict" * lpad(i, 2, "0") * ".json")
         grid_points_to_basins_in_parallel(
             nc_file,
             subdivisions[i],
@@ -239,7 +239,7 @@ end
 function main()
     data_file_path = joinpath(@__DIR__, "..", "..", "data")
     nc_file =
-        joinpath(data_file_path, "source_data", "era5", "globe_year_month", "era5_1990_01.nc")
+        joinpath(data_file_path, "source_data", "ClimaLand", "sr_1M_average.nc")
     shp_file = joinpath(
         data_file_path,
         "source_data",
@@ -248,7 +248,10 @@ function main()
     )
     basin_id_field = "HYBAS_ID"
     output_dir = joinpath(data_file_path, "midway_data", "mapping_dicts")
-    grid_points_to_basins(nc_file, shp_file, basin_id_field, output_dir)
+    do_monte_carlo = true
+    num_mc_exp = 1000
+    num_parts = 8
+    grid_points_to_basins(nc_file, shp_file, basin_id_field, output_dir, do_monte_carlo, num_mc_exp, num_parts)
 end
 
 main()
