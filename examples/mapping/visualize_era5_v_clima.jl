@@ -87,10 +87,12 @@ clima_nc_path =
     joinpath(data_file_path, "source_data", "ClimaLand", "sr_1M_average.nc")
 output_file = joinpath(@__DIR__, "lat_lon_plot.png")
 
+basin_id = "1050671560"
+
 # Plot the lat, lon coordinates from the JSON files and save as PNG
 plot_lat_lon(
     [era5_json_path, clima_json_path],
     [era5_nc_path, clima_nc_path],
-    "1050014490",
+    basin_id,
     output_file,
 )
