@@ -244,7 +244,7 @@ function main()
         "source_data",
         "era5",
         "globe_year_month",
-        "era5_1990_01.nc",
+        "thinned_era5_1990_01.nc",
     )
     shp_file = joinpath(
         data_file_path,

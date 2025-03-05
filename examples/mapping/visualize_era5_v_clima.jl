@@ -15,7 +15,7 @@ function standard_longitudes!(longitudes::Vector{<:Real})
     end
 end
 
-# Function to read JSON files and plot the lat, lon coordinates
+# Function to read JSON files and plot the lat, lon coordinates with a proper legend
 function plot_lat_lon(
     json_paths::Vector{String},
     nc_paths::Vector{String},
@@ -27,25 +27,35 @@ function plot_lat_lon(
         xlabel = "Longitude",
         ylabel = "Latitude",
         title = "Lat/Lon Coordinates",
+        legend = :topright,  # Position legend in the top right
     )
 
+    # Generate distinct colors for each dataset
+    colors = [:lightblue, :darkblue, :orange]
+
     # Loop through each file and basin ID
-    for (json_path, nc_path) in zip(json_paths, nc_paths)
+    for (i, (json_path, nc_path)) in enumerate(zip(json_paths, nc_paths))
         # Read the JSON file
         json_data = JSON.parsefile(json_path)
         basin_data = json_data[basin_id]
 
         # Read the netCDF file
         dataset = NetCDF.open(nc_path)
-        # era5: "longitude" & ClimaLand: "lon"
-        # era5: "latitude" & Climaland: "lat"
-        if nc_path == joinpath(
+
+        # Select correct longitude/latitude variable names
+        if (nc_path == joinpath(
             data_file_path,
             "source_data",
             "era5",
             "globe_year_month",
-            "era5_1990_01.nc",
-        )
+            "era5_1990_01.nc"
+        )) || (nc_path == joinpath(
+            data_file_path,
+            "source_data",
+            "era5",
+            "globe_year_month",
+            "thinned_era5_1990_01.nc"
+        ))
             longitudes = dataset["longitude"][:]
             latitudes = dataset["latitude"][:]
         else
@@ -58,13 +68,18 @@ function plot_lat_lon(
         lon_vals = []
         lat_vals = []
         opacities = []
+
         for value in values(basin_data)
             push!(lon_vals, longitudes[value[1]])
             push!(lat_vals, latitudes[value[2]])
             push!(opacities, value[3])
         end
-        # Overlay the coordinates on the plot with opacity
-        scatter!(p, lon_vals, lat_vals, alpha = opacities)
+
+        # Scatter plot with explicit colors and invisible points for legend
+        scatter!(p, lon_vals, lat_vals, alpha = opacities, color = colors[i], label = "")
+
+        # Add invisible scatter points to properly display legend colors
+        scatter!(p, [NaN], [NaN], color = colors[i], label = basename(nc_path))
     end
 
     # Save the plot as a PNG file
@@ -82,17 +97,25 @@ era5_nc_path = joinpath(
     "globe_year_month",
     "era5_1990_01.nc",
 )
+thinned_era5_json_path = joinpath(output_dir, "thinned_era5_grid_to_basin_dict.json")
+thinned_era5_nc_path = joinpath(
+    data_file_path,
+    "source_data",
+    "era5",
+    "globe_year_month",
+    "thinned_era5_1990_01.nc",
+)
 clima_json_path = joinpath(output_dir, "climaland_grid_to_basin_dict.json")
 clima_nc_path =
     joinpath(data_file_path, "source_data", "ClimaLand", "sr_1M_average.nc")
-output_file = joinpath(@__DIR__, "lat_lon_plot.png")
+output_file = joinpath(@__DIR__, "thin_lat_lon_plot.png")
 
-basin_id = "1050671560"
+basin_id = "1050014490"
 
 # Plot the lat, lon coordinates from the JSON files and save as PNG
 plot_lat_lon(
-    [era5_json_path, clima_json_path],
-    [era5_nc_path, clima_nc_path],
+    [era5_json_path, thinned_era5_json_path, clima_json_path],
+    [era5_nc_path, thinned_era5_nc_path, clima_nc_path],
     basin_id,
     output_file,
 )
