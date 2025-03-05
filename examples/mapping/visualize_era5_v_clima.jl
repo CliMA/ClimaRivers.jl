@@ -43,19 +43,23 @@ function plot_lat_lon(
         dataset = NetCDF.open(nc_path)
 
         # Select correct longitude/latitude variable names
-        if (nc_path == joinpath(
-            data_file_path,
-            "source_data",
-            "era5",
-            "globe_year_month",
-            "era5_1990_01.nc"
-        )) || (nc_path == joinpath(
-            data_file_path,
-            "source_data",
-            "era5",
-            "globe_year_month",
-            "thinned_era5_1990_01.nc"
-        ))
+        if (
+            nc_path == joinpath(
+                data_file_path,
+                "source_data",
+                "era5",
+                "globe_year_month",
+                "era5_1990_01.nc",
+            )
+        ) || (
+            nc_path == joinpath(
+                data_file_path,
+                "source_data",
+                "era5",
+                "globe_year_month",
+                "thinned_era5_1990_01.nc",
+            )
+        )
             longitudes = dataset["longitude"][:]
             latitudes = dataset["latitude"][:]
         else
@@ -76,7 +80,14 @@ function plot_lat_lon(
         end
 
         # Scatter plot with explicit colors and invisible points for legend
-        scatter!(p, lon_vals, lat_vals, alpha = opacities, color = colors[i], label = "")
+        scatter!(
+            p,
+            lon_vals,
+            lat_vals,
+            alpha = opacities,
+            color = colors[i],
+            label = "",
+        )
 
         # Add invisible scatter points to properly display legend colors
         scatter!(p, [NaN], [NaN], color = colors[i], label = basename(nc_path))
@@ -97,7 +108,8 @@ era5_nc_path = joinpath(
     "globe_year_month",
     "era5_1990_01.nc",
 )
-thinned_era5_json_path = joinpath(output_dir, "thinned_era5_grid_to_basin_dict.json")
+thinned_era5_json_path =
+    joinpath(output_dir, "thinned_era5_grid_to_basin_dict.json")
 thinned_era5_nc_path = joinpath(
     data_file_path,
     "source_data",

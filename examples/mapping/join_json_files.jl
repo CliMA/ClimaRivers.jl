@@ -26,10 +26,6 @@ input_files = [
 
 # Combined JSON file name
 file_name = "thinned_era5_grid_to_basin_dict.json"
-output_file = joinpath(
-    data_file_path,
-    "midway_data",
-    "mapping_dicts",
-    file_name,
-)
+output_file =
+    joinpath(data_file_path, "midway_data", "mapping_dicts", file_name)
 merge_json_files(output_file, input_files)

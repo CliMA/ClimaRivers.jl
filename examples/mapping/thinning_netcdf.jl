@@ -2,8 +2,20 @@ using NCDatasets
 
 # File paths
 data_file_path = joinpath(@__DIR__, "..", "..", "data")
-input_file = joinpath(data_file_path, "source_data", "era5", "globe_year_month", "era5_1990_01.nc")
-output_file = joinpath(data_file_path, "source_data", "era5", "globe_year_month", "thinned_era5_1990_01.nc")
+input_file = joinpath(
+    data_file_path,
+    "source_data",
+    "era5",
+    "globe_year_month",
+    "era5_1990_01.nc",
+)
+output_file = joinpath(
+    data_file_path,
+    "source_data",
+    "era5",
+    "globe_year_month",
+    "thinned_era5_1990_01.nc",
+)
 
 # Open the input NetCDF file
 ds = Dataset(input_file, "r")
@@ -20,19 +32,31 @@ NCDataset(output_file, "c") do ds_out
     defDim(ds_out, "time", length(ds["time"]))
 
     # Define coordinate variables with correct data types
-    defVar(ds_out, "longitude", Float32, ("longitude",), attrib = Dict(
-        "units" => "degrees_east",
-        "long_name" => "longitude"
-    ))
-    defVar(ds_out, "latitude", Float32, ("latitude",), attrib = Dict(
-        "units" => "degrees_north",
-        "long_name" => "latitude"
-    ))
-    defVar(ds_out, "time", Int32, ("time",), attrib = Dict(
-        "units" => "hours since 1900-01-01 00:00:00.0",
-        "long_name" => "time",
-        "calendar" => "gregorian"
-    ))
+    defVar(
+        ds_out,
+        "longitude",
+        Float32,
+        ("longitude",),
+        attrib = Dict("units" => "degrees_east", "long_name" => "longitude"),
+    )
+    defVar(
+        ds_out,
+        "latitude",
+        Float32,
+        ("latitude",),
+        attrib = Dict("units" => "degrees_north", "long_name" => "latitude"),
+    )
+    defVar(
+        ds_out,
+        "time",
+        Int32,
+        ("time",),
+        attrib = Dict(
+            "units" => "hours since 1900-01-01 00:00:00.0",
+            "long_name" => "time",
+            "calendar" => "gregorian",
+        ),
+    )
 
     # Copy and subsample coordinate variables
     ds_out["longitude"][:] .= ds["longitude"][lon_indices]
@@ -52,10 +76,11 @@ NCDataset(output_file, "c") do ds_out
         if var in ["longitude", "latitude", "time"]
             continue
         end
-        
+
         # Get variable attributes
-        attrs = Dict(attr => ds[var].attrib[attr] for attr in keys(ds[var].attrib))
-        
+        attrs =
+            Dict(attr => ds[var].attrib[attr] for attr in keys(ds[var].attrib))
+
         # Ensure _FillValue matches Float32 type
         if "_FillValue" in keys(attrs)
             attrs["_FillValue"] = Float32(attrs["_FillValue"])
@@ -65,13 +90,26 @@ NCDataset(output_file, "c") do ds_out
         var_shape = size(ds[var])
         var_dims = dimnames(ds[var])  # Get actual dimension order
 
-        println("Processing variable: ", var, " with shape ", var_shape, " and dimensions ", var_dims)
+        println(
+            "Processing variable: ",
+            var,
+            " with shape ",
+            var_shape,
+            " and dimensions ",
+            var_dims,
+        )
 
         # Define the variable in the output NetCDF file
-        defVar(ds_out, var, Float32, ["longitude", "latitude", "time"], attrib = attrs)
+        defVar(
+            ds_out,
+            var,
+            Float32,
+            ["longitude", "latitude", "time"],
+            attrib = attrs,
+        )
 
         ds_out[var][:, :, :] .= ds[var][lon_indices, lat_indices, :]
- 
+
     end
 end
 
