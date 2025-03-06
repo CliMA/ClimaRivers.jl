@@ -4,11 +4,33 @@ using NCDatasets
 # File paths
 data_file_path = joinpath(@__DIR__, "..", "..", "data")
 
-thin_json_file = joinpath(data_file_path, "midway_data", "mapping_dicts", "thinned_era5_grid_to_basin_dict.json")
-thin_nc_file = joinpath(data_file_path, "source_data", "era5", "globe_year_month", "thinned_era5_1990_01.nc")
+thin_json_file = joinpath(
+    data_file_path,
+    "midway_data",
+    "mapping_dicts",
+    "thinned_era5_grid_to_basin_dict.json",
+)
+thin_nc_file = joinpath(
+    data_file_path,
+    "source_data",
+    "era5",
+    "globe_year_month",
+    "thinned_era5_1990_01.nc",
+)
 
-base_json_file = joinpath(data_file_path, "midway_data", "mapping_dicts", "era5_grid_to_basin_dict.json")
-base_nc_file = joinpath(data_file_path, "source_data", "era5", "globe_year_month", "era5_1990_01.nc")
+base_json_file = joinpath(
+    data_file_path,
+    "midway_data",
+    "mapping_dicts",
+    "era5_grid_to_basin_dict.json",
+)
+base_nc_file = joinpath(
+    data_file_path,
+    "source_data",
+    "era5",
+    "globe_year_month",
+    "era5_1990_01.nc",
+)
 
 json_files = [thin_json_file, base_json_file]
 nc_files = [thin_nc_file, base_nc_file]
@@ -84,7 +106,13 @@ rmse_values = calculate_rmse(thin_basin_sro_sums, base_basin_sro_sums)
 
 # Plot the distribution of RMSE values
 rmse_list = collect(values(rmse_values))
-histogram(rmse_list, bins=30, label="RMSE Values", alpha=0.7, legend=:topright)
+histogram(
+    rmse_list,
+    bins = 30,
+    label = "RMSE Values",
+    alpha = 0.7,
+    legend = :topright,
+)
 xlabel!("RMSE")
 ylabel!("Frequency")
 title!("Distribution of RMSE Values")
