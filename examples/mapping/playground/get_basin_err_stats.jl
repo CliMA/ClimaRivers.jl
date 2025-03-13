@@ -1,7 +1,13 @@
 using CSV, DataFrames, JSON, Statistics, Plots
 
 data_file_path = joinpath(@__DIR__, "..", "..", "..", "data")
-attr_file = joinpath(data_file_path, "routing", "attributes", "attributes_lv05", "attributes.csv")
+attr_file = joinpath(
+    data_file_path,
+    "routing",
+    "attributes",
+    "attributes_lv05",
+    "attributes.csv",
+)
 json_file = joinpath(@__DIR__, "large_diff_values.json")
 
 attr_data = CSV.read(attr_file, DataFrame)
@@ -22,7 +28,7 @@ function compute_stats(data, col_name)
         "Median" => median(data[!, col_name]),
         "Min" => minimum(data[!, col_name]),
         "Max" => maximum(data[!, col_name]),
-        "Std Dev" => std(data[!, col_name])
+        "Std Dev" => std(data[!, col_name]),
     )
 end
 
@@ -42,8 +48,23 @@ for (key, value) in filtered_stats
 end
 
 # Plot histogram
-plt = histogram(attr_data.area, bins=30, alpha=0.5, label="attr_data", color=:blue, normalize=true)
-histogram!(plt, filtered_attr_data.area, bins=30, alpha=0.5, label="filtered_attr_data", color=:red, normalize=true)
+plt = histogram(
+    attr_data.area,
+    bins = 30,
+    alpha = 0.5,
+    label = "attr_data",
+    color = :blue,
+    normalize = true,
+)
+histogram!(
+    plt,
+    filtered_attr_data.area,
+    bins = 30,
+    alpha = 0.5,
+    label = "filtered_attr_data",
+    color = :red,
+    normalize = true,
+)
 title!("Area Distribution")
 xlabel!("Area")
 ylabel!("Density")
@@ -64,4 +85,3 @@ min_area_value = filtered_attr_data[min_area_index, :area]
 # Print results
 println("Basin with the minimum area: ", min_area_basin)
 println("Minimum area value: ", min_area_value)
-

@@ -110,7 +110,8 @@ function calculate_diff_per_basin(thin_sums, base_sums)
 end
 
 # Calculate RMSE values
-diff_values, large_diff_values = calculate_diff_per_basin(thin_basin_sro_sums, base_basin_sro_sums)
+diff_values, large_diff_values =
+    calculate_diff_per_basin(thin_basin_sro_sums, base_basin_sro_sums)
 
 # Plot the distribution of diff values
 diff_list = collect(values(diff_values))
