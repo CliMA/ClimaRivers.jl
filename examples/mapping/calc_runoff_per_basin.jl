@@ -88,38 +88,51 @@ using Plots
 using Statistics
 
 # Function to calculate RMSE
-function calculate_rmse(thin_sums, base_sums)
-    rmse_values = Dict()
+function calculate_diff_per_basin(thin_sums, base_sums)
+    diff_values = Dict()
+    # max_thin = maximum(filter(x -> !isnan(x), collect(values(thin_sums))))
+    # max_base = maximum(filter(x -> !isnan(x), collect(values(base_sums))))
+    # max_value = max(max_thin, max_base)
+    # @info "max_value: $max_value"
+    large_diff_values = Dict()
     for basin_id in keys(thin_sums)
         if haskey(base_sums, basin_id)
             thin_value = thin_sums[basin_id]
             base_value = base_sums[basin_id]
-            rmse = sqrt(mean((thin_value - base_value)^2))
-            rmse_values[basin_id] = rmse
+            diff = abs(thin_value - base_value) / max(thin_value, base_value)
+            diff_values[basin_id] = diff
+            if diff >= 0.8
+                large_diff_values[basin_id] = diff
+            end
         end
     end
-    return rmse_values
+    return diff_values, large_diff_values
 end
 
 # Calculate RMSE values
-rmse_values = calculate_rmse(thin_basin_sro_sums, base_basin_sro_sums)
+diff_values, large_diff_values = calculate_diff_per_basin(thin_basin_sro_sums, base_basin_sro_sums)
 
-# Plot the distribution of RMSE values
-rmse_list = collect(values(rmse_values))
+# Plot the distribution of diff values
+diff_list = collect(values(diff_values))
 histogram(
-    rmse_list,
+    diff_list,
     bins = 30,
-    label = "RMSE Values",
+    label = "Diff Values",
     alpha = 0.7,
     legend = :topright,
 )
-xlabel!("RMSE")
+xlabel!("Diff")
 ylabel!("Frequency")
-title!("Distribution of RMSE Values")
+title!("Distribution of Diff Values")
 
 # Save the plot
-savefig("rmse_distribution.png")
+savefig("diff_distribution.png")
 
+# Save large_diff_values as a JSON file
+output_file = joinpath(@__DIR__, "playground", "large_diff_values.json")
+open(output_file, "w") do io
+    JSON.print(io, large_diff_values)
+end
 # plot a histogram of the normalized weighted sums for the thinned and base basin data
 # thinned_sums = collect(values(thin_basin_sro_sums))
 # base_sums = collect(values(base_basin_sro_sums))
