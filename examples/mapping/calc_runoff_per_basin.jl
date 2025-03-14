@@ -8,7 +8,7 @@ thin_json_file = joinpath(
     data_file_path,
     "midway_data",
     "mapping_dicts",
-    "thinned_era5_grid_to_basin_dict.json",
+    "lv04_thinned_era5_grid_to_basin_dict.json",
 )
 thin_nc_file = joinpath(
     data_file_path,
@@ -22,7 +22,7 @@ base_json_file = joinpath(
     data_file_path,
     "midway_data",
     "mapping_dicts",
-    "era5_grid_to_basin_dict.json",
+    "lv04_era5_grid_to_basin_dict.json",
 )
 base_nc_file = joinpath(
     data_file_path,
@@ -127,10 +127,10 @@ ylabel!("Frequency")
 title!("Distribution of Diff Values")
 
 # Save the plot
-savefig("diff_distribution.png")
+savefig("lv04_diff_distribution.png")
 
 # Save large_diff_values as a JSON file
-output_file = joinpath(@__DIR__, "playground", "large_diff_values.json")
+output_file = joinpath(@__DIR__, "playground", "lv04_large_diff_values.json")
 open(output_file, "w") do io
     JSON.print(io, large_diff_values)
 end

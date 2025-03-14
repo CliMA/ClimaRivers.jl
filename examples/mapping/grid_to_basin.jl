@@ -64,14 +64,29 @@ Subdivide a dataframe in an array of parts.
 function subdivide_dataframe(df::DataFrame, num_parts::Int)
     # Calculate the size of each part
     part_size, remainder = divrem(size(df, 1), num_parts)
+    # print("part_size: $part_size\n")
+    # print("remainder: $remainder\n")
 
     # Subdivide the DataFrame into equal parts
     subdivisions = []
     start_idx = 1
+
+    # Get shape (number of rows and columns)
+    num_rows, num_cols = size(df)
+
+    # Print results
+    # println("DataFrame Shape: ", (num_rows, num_cols))  # Output as tuple (rows, columns)
+    # println("Number of rows: ", num_rows)
+    # println("Number of columns: ", num_cols)
+    # println("num_parts: $num_parts")
     for i in 1:(num_parts - 1)
         end_idx = start_idx + part_size - 1 + (remainder != 0)
+
+        # print("Subdivision $i: $start_idx:$end_idx\n")
+
         push!(subdivisions, df[start_idx:end_idx, :])
         start_idx = end_idx + 1
+        remainder = max(remainder - 1, 0)
     end
     push!(subdivisions, df[start_idx:end, :])
 
@@ -250,7 +265,7 @@ function main()
         data_file_path,
         "source_data",
         "BasinATLAS_v10_shp",
-        "BasinATLAS_v10_lev05.shp",
+        "BasinATLAS_v10_lev04.shp",
     )
     basin_id_field = "HYBAS_ID"
     output_dir = joinpath(data_file_path, "midway_data", "mapping_dicts")

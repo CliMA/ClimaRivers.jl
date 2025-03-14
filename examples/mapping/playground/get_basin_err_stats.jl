@@ -8,7 +8,7 @@ attr_file = joinpath(
     "attributes_lv05",
     "attributes.csv",
 )
-json_file = joinpath(@__DIR__, "large_diff_values.json")
+json_file = joinpath(@__DIR__, "lv04_large_diff_values.json")
 
 attr_data = CSV.read(attr_file, DataFrame)
 err_data = JSON.parsefile(json_file)
@@ -70,7 +70,7 @@ xlabel!("Area")
 ylabel!("Density")
 
 # Save the plot as a PNG file
-output_file = joinpath(@__DIR__, "area_distribution.png")
+output_file = joinpath(@__DIR__, "lv04_area_distribution.png")
 savefig(output_file)
 
 # Find the row index of the minimum area in the filtered dataset
