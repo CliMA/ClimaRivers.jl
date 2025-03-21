@@ -1,3 +1,7 @@
+# ----------------------------------------------------------------------------
+# Gets distribution of area values for all basins and basins with large diff values from calc_runoff_per_basin.jl
+# ----------------------------------------------------------------------------
+
 using CSV, DataFrames, JSON, Statistics, Plots
 
 data_file_path = joinpath(@__DIR__, "..", "..", "..", "data")

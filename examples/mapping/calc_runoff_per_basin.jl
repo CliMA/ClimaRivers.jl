@@ -1,3 +1,9 @@
+# ----------------------------------------------------------------------------
+# Calculates the normalized weighted sum of the Surface Runoff (sro) variable
+# for each basin in the thinned and base basin data.
+#   Adjust file paths as needed. Used to validate accuracy of climaland.
+# ----------------------------------------------------------------------------
+
 using JSON
 using NCDatasets
 

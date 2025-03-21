@@ -1,3 +1,8 @@
+# ----------------------------------------------------------------------------
+# Script used to thin era5 NetCDF files by a factor of 6
+# Creates thinned_era5_1990_01.nc file used to validate accuracy of climaland
+# ----------------------------------------------------------------------------
+
 using NCDatasets
 
 # File paths
@@ -12,7 +17,7 @@ input_file = joinpath(
 output_file = joinpath(
     data_file_path,
     "source_data",
-    "era5",
+    "thinned_era5",
     "globe_year_month",
     "thinned_era5_1990_01.nc",
 )

@@ -1,3 +1,8 @@
+# ----------------------------------------------------------------------------
+# Compute the time series for all basins based on the given inputs.
+# Inputs described in compute_basins_timeseries() function.
+# ----------------------------------------------------------------------------
+
 using Distributed
 @everywhere using CSV,
     DataFrames, Dates, JSON, NCDatasets, ProgressMeter, Statistics

@@ -1,3 +1,9 @@
+# ----------------------------------------------------------------------------
+# Script takes in JSON files and netCDF files to plot lat, lon coordinates of a basin for inputted nc files
+#   JSON files are grid to basin mappings : {basin_id: [lon_idx, lat_idx, proba]}
+#   outputs lat_lon_plot.png
+# ----------------------------------------------------------------------------
+
 using JSON
 using Plots
 using NetCDF

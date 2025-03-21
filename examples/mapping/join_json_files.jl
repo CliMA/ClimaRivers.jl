@@ -1,3 +1,8 @@
+# ----------------------------------------------------------------------------
+# Merges JSON files after grid_to_basin.jl script processing into one JSON file
+#   Adjust naming of input files as needed
+# ----------------------------------------------------------------------------
+
 using JSON
 
 function merge_json_files(output_file::String, input_files::Vector{String})

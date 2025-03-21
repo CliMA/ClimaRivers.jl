@@ -1,9 +1,14 @@
+# ----------------------------------------------------------------------------
+# Plots the shape of the first basin in a given shapefile.
+# ----------------------------------------------------------------------------
+
 using Shapefile, DataFrames, Plots
 
 # Observing the contents of the shape file
 
 # Load the shapefile
-shp_file = "/groups/esm/achiang/ClimaRivers.jl/data/source_data/BasinATLAS_v10_shp/BasinATLAS_v10_lev05.shp"
+data_file_path = joinpath(@__DIR__, "..", "..", "data")
+shp_file = joinpath(data_file_path, "source_data", "BasinATLAS_v10_shp", "BasinATLAS_v10_lev05.shp")
 shape_df = Shapefile.Table(shp_file) |> DataFrame
 
 select!(shape_df, [:geometry, :HYBAS_ID])

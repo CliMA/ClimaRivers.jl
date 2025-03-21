@@ -1,3 +1,8 @@
+# ----------------------------------------------------------------------------
+# Script to create basin mappings to grid points JSON file for ClimaLand data
+# ex: {basin_id: [(lon_idx, lat_idx, proba), ...], ...}
+# ----------------------------------------------------------------------------
+
 using DataFrames,
     JSON, NetCDF, ProgressMeter, Shapefile, NCDatasets, Distributed
 
