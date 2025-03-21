@@ -53,25 +53,25 @@ min_area = min(minimum(attr_data.area), minimum(filtered_attr_data.area))
 max_area = max(maximum(attr_data.area), maximum(filtered_attr_data.area))
 
 num_bins = 30
-bin_edges = range(min_area, max_area, length=num_bins+1)  # +1 since we need edges
+bin_edges = range(min_area, max_area, length = num_bins + 1)  # +1 since we need edges
 
 plt = histogram(
     attr_data.area,
-    bins=bin_edges,  # Explicitly set bin edges
-    alpha=0.5,
-    label="attr_data",
-    color=:blue,
-    normalize=true,
+    bins = bin_edges,  # Explicitly set bin edges
+    alpha = 0.5,
+    label = "attr_data",
+    color = :blue,
+    normalize = true,
 )
 
 histogram!(
     plt,
     filtered_attr_data.area,
-    bins=bin_edges,  # Use the same bin edges
-    alpha=0.5,
-    label="filtered_attr_data",
-    color=:red,
-    normalize=true,
+    bins = bin_edges,  # Use the same bin edges
+    alpha = 0.5,
+    label = "filtered_attr_data",
+    color = :red,
+    normalize = true,
 )
 title!("Area Distribution")
 xlabel!("Area")
