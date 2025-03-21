@@ -100,7 +100,7 @@ end
 # Example usage
 data_file_path = joinpath(@__DIR__, "..", "..", "data")
 output_dir = joinpath(data_file_path, "midway_data", "mapping_dicts")
-era5_json_path = joinpath(output_dir, "lv04_era5_grid_to_basin_dict.json")
+era5_json_path = joinpath(output_dir, "era5_grid_to_basin_dict.json")
 era5_nc_path = joinpath(
     data_file_path,
     "source_data",
@@ -109,7 +109,7 @@ era5_nc_path = joinpath(
     "era5_1990_01.nc",
 )
 thinned_era5_json_path =
-    joinpath(output_dir, "lv04_thinned_era5_grid_to_basin_dict.json")
+    joinpath(output_dir, "thinned_era5_grid_to_basin_dict.json")
 thinned_era5_nc_path = joinpath(
     data_file_path,
     "source_data",
@@ -122,7 +122,7 @@ thinned_era5_nc_path = joinpath(
 #     joinpath(data_file_path, "source_data", "ClimaLand", "sr_1M_average.nc")
 output_file = joinpath(@__DIR__, "thin_lat_lon_plot.png")
 
-basin_id = "9040008450" #"1050040260" #"1050014490"
+basin_id = "7050431350" #"1050040260" #"1050014490"
 
 # Plot the lat, lon coordinates from the JSON files and save as PNG
 plot_lat_lon(

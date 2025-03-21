@@ -8,7 +8,7 @@ thin_json_file = joinpath(
     data_file_path,
     "midway_data",
     "mapping_dicts",
-    "lv04_thinned_era5_grid_to_basin_dict.json",
+    "thinned_era5_grid_to_basin_dict.json",
 )
 thin_nc_file = joinpath(
     data_file_path,
@@ -22,7 +22,7 @@ base_json_file = joinpath(
     data_file_path,
     "midway_data",
     "mapping_dicts",
-    "lv04_era5_grid_to_basin_dict.json",
+    "era5_grid_to_basin_dict.json",
 )
 base_nc_file = joinpath(
     data_file_path,
@@ -56,21 +56,30 @@ for i in 1:2
     # Dictionary to store weighted normalized sums
     basin_sro_sums = sro_dicts[i]
 
+    last_t = size(sro_data, 3)
+
     # Process each basin
     for (basin_id, values) in basin_data
         weighted_sum = 0.0
         total_weight = 0.0
 
         for (lon_idx, lat_idx, weight) in values
-            for t in 1:size(sro_data, 3)  # Iterate over time steps
-                sro_value = sro_data[lon_idx, lat_idx, t]
+            sro_value = sro_data[lon_idx, lat_idx, last_t]
 
-                # Ignore missing values (_FillValue in NetCDF)
-                if !ismissing(sro_value)
-                    weighted_sum += sro_value * weight
-                    total_weight += weight
-                end
+            # Ignore missing values (_FillValue in NetCDF)
+            if !ismissing(sro_value)
+                weighted_sum += sro_value * weight
+                total_weight += weight
             end
+            # for t in 1:size(sro_data, 3)  # Iterate over time steps
+            #     sro_value = sro_data[lon_idx, lat_idx, t]
+
+            #     # Ignore missing values (_FillValue in NetCDF)
+            #     if !ismissing(sro_value)
+            #         weighted_sum += sro_value * weight
+            #         total_weight += weight
+            #     end
+            # end
         end
 
         # Compute normalized weighted sum
@@ -90,16 +99,16 @@ using Statistics
 # Function to calculate RMSE
 function calculate_diff_per_basin(thin_sums, base_sums)
     diff_values = Dict()
-    # max_thin = maximum(filter(x -> !isnan(x), collect(values(thin_sums))))
-    # max_base = maximum(filter(x -> !isnan(x), collect(values(base_sums))))
-    # max_value = max(max_thin, max_base)
-    # @info "max_value: $max_value"
+    max_thin = maximum(filter(x -> !isnan(x), collect(values(thin_sums))))
+    max_base = maximum(filter(x -> !isnan(x), collect(values(base_sums))))
+    max_value = max(max_thin, max_base)
+    @info "max_value: $max_value"
     large_diff_values = Dict()
     for basin_id in keys(thin_sums)
         if haskey(base_sums, basin_id)
             thin_value = thin_sums[basin_id]
             base_value = base_sums[basin_id]
-            diff = abs(thin_value - base_value) / max(thin_value, base_value)
+            diff = abs(thin_value - base_value) / max_value #max(thin_value, base_value)
             diff_values[basin_id] = diff
             if diff >= 0.8
                 large_diff_values[basin_id] = diff
@@ -127,10 +136,10 @@ ylabel!("Frequency")
 title!("Distribution of Diff Values")
 
 # Save the plot
-savefig("lv04_diff_distribution.png")
+savefig("diff_distribution.png")
 
 # Save large_diff_values as a JSON file
-output_file = joinpath(@__DIR__, "playground", "lv04_large_diff_values.json")
+output_file = joinpath(@__DIR__, "playground", "large_diff_values.json")
 open(output_file, "w") do io
     JSON.print(io, large_diff_values)
 end
