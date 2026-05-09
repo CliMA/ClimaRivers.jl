@@ -8,8 +8,12 @@ A `UserPromptSubmit` hook in `.claude/settings.json` injects this file into ever
 
 | Name | File | Summary | Trigger keywords |
 |------|------|---------|-----------------|
-| docstrings | [docstrings.xml](docstrings.xml) | Add or normalize Julia docstrings on public symbols using the package's established convention | docstring, docs, document, missing doc, undocumented |
-| documentation | [documentation.xml](documentation.xml) | Improve markdown pages under `docs/src/` for clarity and Documenter.jl consistency | markdown, docs page, readme, guide, tutorial, documenter |
+| docstrings | [docstrings.xml](docstrings.xml) | Add or normalize Julia docstrings on public symbols using the package's established convention | docstring, missing doc, undocumented, API doc |
+| docs-neaten | [docs-neaten.xml](docs-neaten.xml) | Cross-cutting style pass on any docs page: prose, `@ref` correctness, code-fence tags, heading hierarchy, link form | neaten, polish, prose, cleanup, consistency, cross-reference, formatting, refs |
+| docs-readme | [docs-readme.xml](docs-readme.xml) | Write or improve the project-root README.md: badge table, pitch, copy-paste demo, absolute URLs | readme, README, github landing, badges |
+| docs-index | [docs-index.xml](docs-index.xml) | Write or improve the docs site landing page: package pitch, `@ref` cross-refs, routing hub | index page, landing page, docs home, docs landing |
+| docs-installation | [docs-installation.xml](docs-installation.xml) | Write or improve an installation or setup page: imperative procedures, `!!! info` admonitions, no cross-refs | install, installation, setup, getting started |
+| docs-tutorial | [docs-tutorial.xml](docs-tutorial.xml) | Write or improve a hand-written tutorial page: alternating prose-and-code, first-person plural narration, LaTeX math | tutorial, example, walkthrough, worked example |
 | base-show | [base-show.xml](base-show.xml) | Add concise `Base.show` methods for types with unhelpful default REPL output | show, display, print, repr, REPL output |
 
 ## Adding a new specialism
