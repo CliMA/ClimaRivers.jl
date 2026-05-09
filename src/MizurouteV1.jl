@@ -28,6 +28,8 @@ Return a `MizurouteHillslopeV1` with default parameters: shape = 1.5, timescale 
 
 # Examples
 ```jldoctest
+julia> using ClimaRivers
+
 julia> MizurouteHillslopeV1{Float64}()
 MizurouteHillslopeV1{Float64}
   shape     : 1.5

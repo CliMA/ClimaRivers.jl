@@ -184,7 +184,10 @@ deduplicated list. Returns an empty list if `basin_id` has no upstream neighbour
 
 # Examples
 ```jldoctest
+julia> using ClimaRivers
+
 julia> graph = Dict("outlet" => ["A", "B"], "A" => ["C"], "B" => [], "C" => []);
+
 julia> get_upstream_basins("outlet", graph)
 3-element Vector{Any}:
  "A"

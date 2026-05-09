@@ -101,7 +101,8 @@ Construct a `DateWindow` from keyword arguments.
 
 # Examples
 ```jldoctest
-julia> using Dates
+julia> using Dates, ClimaRivers
+
 julia> DateWindow(start_date=Date(2000,1,1), end_date=Date(2000,1,31), date_step=Day(1))
 DateWindow
   start : 2000-01-01
@@ -125,8 +126,10 @@ Return a `Vector{Date}` of every date spanned by `dw`, stepping by `dw.date_step
 
 # Examples
 ```jldoctest
-julia> using Dates
+julia> using Dates, ClimaRivers
+
 julia> dw = DateWindow(start_date=Date(2000,1,1), end_date=Date(2000,1,4), date_step=Day(2));
+
 julia> get_all_dates(dw)
 2-element Vector{Date}:
  2000-01-01
@@ -144,8 +147,10 @@ Advance `dw` forward by `n_steps` steps of `dw.date_step` and return the shifted
 
 # Examples
 ```jldoctest
-julia> using Dates
+julia> using Dates, ClimaRivers
+
 julia> dw = DateWindow(start_date=Date(2000,1,1), end_date=Date(2000,1,4), date_step=Day(2));
+
 julia> iterate(dw)
 DateWindow
   start : 2000-01-03
