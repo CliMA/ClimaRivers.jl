@@ -1,0 +1,34 @@
+{
+    "$schema": "https://json.schemastore.org/claude-code-settings.json",
+    "permissions": {
+        "allow": ["Bash(julia --project *)",
+                  "Read(*)",
+                  "FileWrite(src/*, test/*, docs/*, examples/*, ai/*)"],
+        "deny": ["Read(./.env)", "Bash(git *)"]
+    },
+    "env": {
+        "JULIA_NUM_THREADS": "auto"
+    },
+    "hooks": {
+        "UserPromptSubmit": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "cat ai/README.md 2>/dev/null && printf '\\n---\\nSPECIALISM ROUTING: Identify the matching specialism in ai/ for this task. If one clearly matches, READ its full XML file (ai/<name>.xml) before acting and follow its task/workflow/rubric/formatting. If no specialism clearly matches, STOP and use AskUserQuestion to ask the user to choose: (a) pick one of the listed specialisms to apply anyway, or (b) approve a new specialism to be added (propose a name and one-line scope). Do NOT proceed with the task until the user has chosen.\\n'"
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "julia --project=.dev .dev/climaformat.jl . 2>/dev/null || echo 'Formatting skipped as error encountered when calling `julia --project=.dev .dev/climaformat.jl`'"
+                    }
+                ]
+            }
+        ]
+    }
+}

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<specialism name="documentation" version="1">
+
+  <task>
+    Improve the clarity, consistency, and technical correctness of markdown documentation pages
+    under the docs source directory (typically docs/src/). Work targets prose quality, heading
+    hierarchy, Documenter.jl cross-reference syntax, and tone — not code examples or API
+    listings, which belong to the docstrings specialism. The output of this specialism is
+    documentation that reads consistently across pages, follows the tone established by the
+    project and its ecosystem, and builds without Documenter.jl warnings.
+  </task>
+
+  <workflow>
+    <step n="1">
+      Orient yourself. Read the project's docs build file (make.jl or equivalent) to learn:
+      the checkdocs setting, sidebar page order, deploy target, and any custom plugins.
+      Note which pages are listed so you know the intended coverage.
+    </step>
+
+    <step n="2">
+      Detect the established tone and conventions. Read 1–2 existing pages that appear most
+      complete. Note: voice (first/second/third person), heading case (sentence vs title),
+      how code blocks are tagged, how cross-references are written (bare @ref vs. named @ref),
+      and where lists vs. prose are preferred.
+    </step>
+
+    <step n="3">
+      List all markdown files under the docs source directory:
+        find docs/src -name '*.md'
+      For each file, read it and identify: heading hierarchy violations, inconsistent voice or
+      tone, missing language tags on code fences, broken or non-Documenter cross-references,
+      and prose that is unclear, redundant, or off-tone. Do not invent new sections; focus on
+      improving what exists.
+    </step>
+
+    <step n="4">
+      Edit pages in place, applying the detected conventions from step 2. When tone is ambiguous,
+      match the style of the most polished existing page. Flag any structural changes (new
+      sections, page additions) for user approval before implementing them.
+    </step>
+
+    <step n="5">
+      If authorized, build the docs locally:
+        julia --project=docs docs/make.jl
+      Resolve any new warnings introduced by the edits. Do not proceed past this step if the
+      build emits errors.
+    </step>
+  </workflow>
+
+  <rubric>
+    <criterion name="tone-consistency" weight="high">
+      All edited pages share the same voice and register as the baseline detected in step 2.
+    </criterion>
+
+    <criterion name="heading-hierarchy" weight="medium">
+      Each page has exactly one H1 (the page title); sub-headings are H2/H3 and never skip
+      levels.
+    </criterion>
+
+    <criterion name="documenter-syntax" weight="high">
+      Cross-references use Documenter.jl @ref form. Code blocks carry a language tag.
+      No bare URL links where @ref is appropriate.
+    </criterion>
+
+    <criterion name="no-new-warnings" weight="high">
+      The docs build (if run) produces no more warnings after the edit than before.
+    </criterion>
+
+    <criterion name="no-invented-content" weight="high">
+      Only content already present is edited. New sections or pages require explicit user approval.
+    </criterion>
+  </rubric>
+
+  <formatting>
+    <rule>ATX headings (# style), sentence-case (capitalize only first word and proper nouns).</rule>
+    <rule>Second-person voice for instructional content ("you can", "run the following").</rule>
+    <rule>Code fences must carry a language tag: ```julia, ```sh, ```toml, etc.</rule>
+    <rule>Inline code for symbol names, file paths, and short commands: `MyType`, `make.jl`.</rule>
+    <rule>Reference-style links only when the same URL is reused more than once on a page.</rule>
+    <rule>Cross-references to documented symbols: [`MyType`](@ref) or [custom text](@ref MyType).</rule>
+    <rule>No trailing whitespace; no hard line-breaks inside paragraphs (let the renderer wrap).</rule>
+
+    <example><![CDATA[
+## Before
+
+# Getting Started
+
+To install ClimaFoo, open Julia and type:
+```
+using Pkg; Pkg.add("ClimaFoo")
+```
+
+See also [the API](api.md) and [StaticEnvironment](../src/Environments.jl).
+
+## After
+
+# Getting started
+
+To install ClimaFoo, open Julia and run:
+
+```julia
+using Pkg
+Pkg.add("ClimaFoo")
+```
+
+See also the [API reference](@ref) and [`StaticEnvironment`](@ref).
+    ]]></example>
+  </formatting>
+
+</specialism>
