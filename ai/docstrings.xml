@@ -101,6 +101,13 @@
           after the opening prose, listing each parameter as `- \`name\`: description [unit]`.</rule>
     <rule>For non-trivial public functions, add a `# Examples` section containing a `jldoctest`
           block. Use `julia&gt; ` prompts and include expected output so Documenter.jl can run it.</rule>
+    <rule>In every `jldoctest` block, each `julia&gt; ` prompt must be separated from the next by
+          a blank line. Documenter.jl rejects blocks where two `julia&gt; ` lines appear consecutively
+          without an intervening blank line. If a statement produces no output, add a semicolon and
+          a blank line before the next prompt.</rule>
+    <rule>If the doctest uses any name from the package, the first statement must be
+          `julia&gt; using &lt;PackageName&gt;` (followed by a blank line). Do not assume the package
+          is already in scope.</rule>
     <rule>`$(TYPEDSIGNATURES)` is always the first line of a function docstring and is the sole
           source of the signature — never also write a manual indented signature above it.</rule>
 
@@ -160,6 +167,7 @@ Advance `x` by one time step of length `t` [days] and return the updated state.
 # Examples
 ```jldoctest
 julia> m = MyStruct(1.0, 4)
+
 julia> my_function(m, 0.5)
 ...
 ```

@@ -59,11 +59,12 @@
     </step>
 
     <step n="5">
-      Verify. If the page uses @example name blocks (Documenter-executed), build the docs
-      locally to confirm they run without error:
+      Build the docs locally to confirm the page renders and all code executes without error:
         julia --project=docs docs/make.jl
-      If the page uses plain ```julia blocks, manually verify the code logic is correct
-      against the current package API. Confirm the page has no unresolved @ref links.
+      If the page uses plain ```julia blocks (not @example blocks), also manually verify
+      the code logic is correct against the current package API.
+      Confirm the page has no unresolved @ref links and the build emits no new warnings.
+      Do not report the task complete if the build emits errors.
     </step>
   </workflow>
 

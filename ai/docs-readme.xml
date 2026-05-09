@@ -56,6 +56,14 @@
       Verify by rendering locally if possible (e.g., a Markdown previewer or `grip`).
       Confirm: (a) badges render, (b) all links resolve, (c) no @ref or relative doc paths remain.
     </step>
+
+    <step n="6">
+      Run the docs build to confirm the overall site still builds without new warnings:
+        julia --project=docs docs/make.jl
+      The README itself is not processed by Documenter, but this step confirms that any pages
+      the README links to still exist and that no earlier edits broke the docs site.
+      Do not report the task complete if the build emits errors.
+    </step>
   </workflow>
 
   <rubric>

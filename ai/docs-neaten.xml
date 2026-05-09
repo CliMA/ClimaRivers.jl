@@ -49,10 +49,10 @@
     </step>
 
     <step n="4">
-      If authorized, build the docs locally:
+      Build the docs locally to confirm no new warnings were introduced:
         julia --project=docs docs/make.jl
       Resolve any new Documenter warnings introduced by the edits (e.g., broken @ref anchors,
-      unresolved cross-references). Do not proceed past this step if the build emits errors.
+      unresolved cross-references). Do not report the task complete if the build emits errors.
     </step>
   </workflow>
 

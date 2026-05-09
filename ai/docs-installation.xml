@@ -50,6 +50,12 @@
       that Julia version constraints are consistent with the compat section, and that any test
       or docs build commands match the current project structure.
     </step>
+
+    <step n="5">
+      Build the docs locally to confirm the page renders without new warnings:
+        julia --project=docs docs/make.jl
+      Resolve any Documenter warnings introduced by the edits before reporting the task complete.
+    </step>
   </workflow>
 
   <rubric>
