@@ -68,6 +68,14 @@
       partially-populated instances.
     </criterion>
 
+    <criterion name="allocation-safety" weight="high">
+      Every data access inside a show method must be an O(1) metadata query: length(), size(),
+      isempty(), first() on a lazy iterator, or direct field access. Never call collect(),
+      sort(), filter(), keys()/values() followed by iteration, or any function that materialises
+      a new collection from an existing one. This guarantees show is safe to call on structs
+      holding millions of elements without triggering large allocations or hangs.
+    </criterion>
+
     <criterion name="test-robustness" weight="medium">
       Unit tests assert structural properties (contains type name, line count), not exact strings.
       A cosmetic change to the show output does not break any test.
@@ -83,6 +91,9 @@
     <rule>First printed line: type name (and key size hints if cheap to compute), using print or println.</rule>
     <rule>Subsequent lines indented by two spaces for readability.</rule>
     <rule>Never print collection contents — only counts, sizes, or ranges.</rule>
+    <rule>Never allocate inside show: use length(), size(), isempty(), and first() on lazy
+          iterators (e.g. values(dict)) rather than collect(), sort(), or any function that
+          copies a collection. All data access must be O(1).</rule>
     <rule>Use sprint(show, MIME("text/plain"), x) in tests to capture output without side effects.</rule>
     <rule>If adding a src/show.jl, include it via include("show.jl") in the main module file,
           placed after the type definitions it references.</rule>
