@@ -130,6 +130,10 @@ julia --project -e 'using Pkg; Pkg.test()'
 
 Confirm that all new tests pass and no pre-existing tests regress.
 
+### Step 6 — Offer to improve the skill
+
+After the tests pass and the REPL output looks good, ask the user: "Would you like to improve the **base-show** skill itself using skill-creator? You can suggest changes to the workflow or quality criteria, or I can analyse what came up during this session to identify improvements to the skill."
+
 ## Quality criteria
 
 | Criterion | Priority | Definition |
