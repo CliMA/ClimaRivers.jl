@@ -11,7 +11,14 @@ using CSV, DataFrames, Dates, DSP, SpecialFunctions
 """
 $(TYPEDSIGNATURES)
 
-Iterating the `initial_date_window` until the `end_date`, return a `river_state` and streamflow from each `date_window`
+Advance `initial_date_window` one step at a time until `end_date`, computing a `HillslopeChannelRiverState`
+and total streamflow at each step. Returns `(streamflows, river_states)` as parallel vectors.
+
+# Arguments
+- `initial_date_window`: starting date window for the first simulation step
+- `river_model`: hillslope-channel model defining the delay distributions
+- `env`: environment containing basin network and forcing data
+- `end_date`: simulation stops when `date_window.end_date` exceeds this date
 """
 function compute_streamflow(
     initial_date_window::DateWindow,
@@ -38,7 +45,12 @@ end
 """
 $(TYPEDSIGNATURES)
 
-Compute and return the `HillslopeChannelRiverState` for this `date_window`.
+Compute and return the `HillslopeChannelRiverState` for `date_window`.
+
+# Arguments
+- `date_window`: time window for which to compute hillslope and channel states
+- `river_model`: hillslope-channel model defining the delay distributions
+- `env`: environment containing basin network and forcing data
 """
 function compute_river_state(
     date_window::DateWindow,
@@ -66,6 +78,14 @@ end
 """
 $(TYPEDSIGNATURES)
 
+Convolve each basin's runoff timeseries with the gamma delay distribution defined by `hillslope_model`
+over `date_window`, and return a `Dict` mapping basin ID to convolved streamflow timeseries [m³/s].
+
+# Arguments
+- `date_window`: time window to extract forcing data and compute the convolution over
+- `hillslope_model`: gamma distribution parameters (shape, timescale, t_max)
+- `static_env`: basin network description providing IDs, attributes, and graph
+- `dynamic_env`: per-basin forcing timeseries and output directory
 """
 function compute_hillslope_state(
     date_window::DateWindow,
@@ -152,7 +172,29 @@ function compute_hillslope_state(
     )
 end
 
-# Recursive function to get a list of all upstream basins
+"""
+$(TYPEDSIGNATURES)
+
+Recursively collect all basin IDs upstream of `basin_id` in `graph_dict` and return a
+deduplicated list. Returns an empty list if `basin_id` has no upstream neighbours.
+
+# Arguments
+- `basin_id`: string ID of the target basin
+- `graph_dict`: adjacency mapping from basin ID to its list of direct upstream neighbour IDs (as in `StaticEnvironment.graph_dict`)
+
+# Examples
+```jldoctest
+julia> using ClimaRivers
+
+julia> graph = Dict("outlet" => ["A", "B"], "A" => ["C"], "B" => [], "C" => []);
+
+julia> get_upstream_basins("outlet", graph)
+3-element Vector{Any}:
+ "A"
+ "C"
+ "B"
+```
+"""
 function get_upstream_basins(basin_id::String, graph_dict::Dict)
     # Base case: if the current basin has no upstream basins, return an empty list
     if isempty(graph_dict[basin_id])
@@ -180,6 +222,17 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
+Route hillslope outflows through the channel network using the diffusive wave kernel of
+`channel_model`, accumulating upstream contributions at each basin outlet over `date_window`.
+Returns a `Dict` mapping basin ID to routed channel streamflow [m³/s] at the end of the window.
+
+# Arguments
+- `new_hillslope`: Dict mapping basin ID to convolved hillslope streamflow timeseries [m³/s] (output of `compute_hillslope_state`)
+- `date_window`: time window over which the hillslope state was computed
+- `channel_model`: diffusive wave parameters (wave velocity, diffusivity, t_max)
+- `static_env`: basin network description providing IDs, attributes with `DIST_MAIN`, and graph
+- `dynamic_env`: provides the output directory
 """
 function compute_channel_state(
     new_hillslope::Dict,
@@ -283,6 +336,14 @@ end
 
 """
 $(TYPEDSIGNATURES)
+
+Sum the hillslope and channel contributions from `river_state` to produce total streamflow [m³/s]
+at each basin outlet. Returns a `Dict` mapping basin ID to total streamflow.
+
+# Arguments
+- `river_state`: computed hillslope and channel states for the current date window
+- `static_env`: provides the list of basin IDs
+- `dynamic_env`: provides the output directory
 """
 function compute_streamflow(
     river_state::RS,
