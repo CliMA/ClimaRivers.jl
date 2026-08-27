@@ -126,7 +126,7 @@ for basin_id in basin_ids_str
     )
 end
 
-streamflow_plot_file = joinpath(@__DIR__, "streamflow_plot.png")
+streamflow_plot_file = joinpath(@__DIR__, "plots", "streamflow_plot.png")
 savefig(p, streamflow_plot_file)
 
 println("Plot saved as 'all_streamflows.png'")

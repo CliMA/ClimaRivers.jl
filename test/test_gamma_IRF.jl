@@ -4,7 +4,8 @@ export test_run_init, test_run_compute, test_run_full
 
 # Used to create Test dataset, different t_max and window date size from mini_gamma_IRF.jl
 
-function test_run_init()
+function test_run_init(dataset)
+    # dataset = "mini_data" or "shallow_data"
     # build hillslope model
     hillslope = MizurouteHillslopeV1{Float64}(1.5, 1.0, 2)
 
@@ -15,7 +16,7 @@ function test_run_init()
     river_model = HillslopeChannelRiverModel(hillslope, channel)
 
     # build environment
-    data_file_path = joinpath(@__DIR__, "..", "mini_data", "routing")
+    data_file_path = joinpath(@__DIR__, "..", dataset, "routing")
 
     # files for static environment
     @info "reading data files from $(data_file_path)"
@@ -45,8 +46,8 @@ function test_run_init()
     end
 
     # date information
-    data_start_date = Date("1996-01-01", "yyyy-mm-dd")
-    data_end_date = Date("1996-01-10", "yyyy-mm-dd") # of entire simulation
+    data_start_date = Date("1990-01-01", "yyyy-mm-dd")
+    data_end_date = Date("1990-01-30", "yyyy-mm-dd") # of entire simulation
     data_step = Day(1)
     data_date_window = DateWindow(
         start_date = data_start_date,
@@ -98,9 +99,9 @@ function test_run_compute(
     return streamflows, river_states
 end
 
-function test_run_full()
+function test_run_full(dataset)
     initial_window, river_model, env, data_end_date, history_length =
-        test_run_init()
+        test_run_init(dataset)
     streamflows, river_states = test_run_compute(
         initial_window,
         river_model,

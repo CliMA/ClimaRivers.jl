@@ -184,7 +184,8 @@ end
 
 
     # Test compute_river_state() for first iteration
-    initial_window, river_model, env, data_end_date, _ = test_run_init()
+    initial_window, river_model, env, data_end_date, _ =
+        test_run_init("mini_data")
 
     ## Test compute_hillslope_state() for first iteration
     hillslope_model = river_model.hillslope_model
@@ -198,52 +199,55 @@ end
     test_hillslope_state = Dict(
         1051435100 => [
             0.0,
-            0.0020499191015790758,
-            0.010452984693913786,
-            0.04126935527573286,
-            0.19083161063516876,
-            0.17075762060905167,
-            0.1804893760599954,
+            0.035439303584852255,
+            0.1905465441033857,
+            0.6751661202561486,
+            1.7829556456086615,
+            0.04980338135579768,
+            0.025206284982074403,
         ],
         1051460430 => [
             0.0,
-            0.16464777031959082,
-            0.16687127747327474,
-            0.45440395874751704,
-            1.0728691978019544,
-            6.413658520862648,
-            4.723755298164256,
+            0.5060926684030579,
+            6.910638305980686,
+            3.492561727421671,
+            2.372223373444184,
+            2.665645525151745,
+            1.3144312787009682,
         ],
         1051429580 => [
-            3.552713678800501e-15,
-            30.01377540496592,
-            25.81356016324419,
-            49.27790306817931,
-            75.49193129565366,
-            33.09285601118408,
-            35.60239021729076,
+            0.0,
+            4.4867776860648405,
+            7.271272713687931,
+            81.21104724160986,
+            140.28430833650683,
+            3.454363710447497,
+            3.2802861748654233,
         ],
         1051435110 => [
-            -2.220446049250313e-16,
-            1.9228093083301891,
-            1.578095249309317,
-            1.658213104150694,
-            4.023195942893823,
-            5.03492062653842,
-            2.571851681460489,
+            0.0,
+            2.448720542746908,
+            3.515228283652492,
+            16.919120633235252,
+            9.019503502568712,
+            1.5564862036684188,
+            1.0678032450972879,
         ],
         1051429650 => [
-            3.552713678800501e-15,
-            29.9487620429082,
-            51.16449376760788,
-            66.3174109253273,
-            177.26668413371624,
-            69.81683649526752,
-            86.90268747602767,
+            0.0,
+            2.1587076841542343,
+            5.065957391924057,
+            197.59232958729942,
+            334.0443321729353,
+            2.2784358096987174,
+            1.9678077832149603,
         ],
     )
+
     new_hillslope_state =
         compute_hillslope_state(initial_window, hillslope_model, env)
+
+
     @test all(
         k -> isapprox(
             new_hillslope_state[k],
@@ -269,18 +273,20 @@ end
     )
 
     test_channel_state = Dict(
-        1.0514351e9 => 3.510632085989178e-10,
-        1.05146043e9 => 21.415229895931486,
+        1.0514351e9 => 1.570786462965263e-11,
+        1.05146043e9 => 1.2034753217945104,
         1.05142958e9 => 0.0,
         1.05143511e9 => 0.0,
         1.05142965e9 => 0.0,
     )
+
     new_channel_state = compute_channel_state(
         new_hillslope_state,
         initial_window,
         channel_model,
         env,
     )
+
     @test all(
         k ->
             isapprox(new_channel_state[k], test_channel_state[k]; atol = 1e-10),
@@ -297,31 +303,41 @@ end
           compute_streamflow(new_river_state, env.static_env, env.dynamic_env)
     streamflow = compute_streamflow(new_river_state, env)
     test_streamflow = Dict(
-        1.0514351e9 => 0.1804893764110586,
-        1.05146043e9 => 26.138985194095742,
-        1.05142958e9 => 35.60239021729076,
-        1.05143511e9 => 2.571851681460489,
-        1.05142965e9 => 86.90268747602767,
+        1.0514351e9 => 0.02520628499778227,
+        1.05146043e9 => 2.5179066004954787,
+        1.05142958e9 => 3.2802861748654233,
+        1.05143511e9 => 1.0678032450972879,
+        1.05142965e9 => 1.9678077832149603,
     )
-    # change to get approx equals for floating types for each basin specifically
+
     @test all(
         k -> isapprox(streamflow[k], test_streamflow[k]; atol = 1e-10),
         keys(streamflow),
     )
 end
 
-@testset "Small Example Tests" begin
+@testset "Mini Tests" begin
     # Run entire small sample set example (10 day span, window size 6)
-    streamflows, river_states = test_run_full()
+    streamflows, river_states = test_run_full("mini_data")
     expected_streamflows = Dict(
-        1.0514351e9 => 0.1681771926595176,
-        1.05146043e9 => 9.439266521834611,
-        1.05142958e9 => 80.04636704743433,
-        1.05143511e9 => 4.791551273615758,
-        1.05142965e9 => 133.05341709808118,
+        1.0514351e9 => 0.2039086137122073,
+        1.05146043e9 => 90.49170178310422,
+        1.05142958e9 => 49.470987755680916,
+        1.05143511e9 => 10.760441661469335,
+        1.05142965e9 => 70.16964778305211,
     )
     @test all(
         k -> isapprox(streamflows[end][k], expected_streamflows[k]),
         keys(expected_streamflows),
+    )
+end
+
+@testset "Short and Wide Tests" begin
+    # Run entire small sample set example (10 day span, window size 6)
+    streamflows, river_states = test_run_full("shallow_data")
+    expected_streamflows = Dict(7.05005406e9 => 50.8404041898554)
+    @test isapprox(
+        streamflows[end][7.05005406e9],
+        expected_streamflows[7.05005406e9],
     )
 end

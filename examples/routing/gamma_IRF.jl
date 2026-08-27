@@ -16,7 +16,7 @@ data_file_path = joinpath(@__DIR__, "..", "..", "data", "routing")
 # files for static environment
 @info "reading data files from $(data_file_path)"
 graph_file = joinpath(data_file_path, "graphs", "graph_lv05.json")
-basin_id_file = joinpath(
+basin_ids_file = joinpath(
     data_file_path,
     "routing_lvs",
     "routing_lvs_lv05",
@@ -30,13 +30,13 @@ forcing_timeseries_dir =
     joinpath(data_file_path, "timeseries", "timeseries_lv05")
 output_dir =
     joinpath(data_file_path, "simulations", "simulations_lv05", "gamma_IRF")
-@info "creating output"
+@info "output path: $output_dir"
 if !isdir(output_dir)
     mkpath(output_dir)
 end
 
-# data date information
-data_start_date = Date("1996-01-01", "yyyy-mm-dd")
+# data information
+data_start_date = Date("1990-01-01", "yyyy-mm-dd")
 data_end_date = Date("2014-12-31", "yyyy-mm-dd") # of entire simulation
 data_step = Day(1)
 data_date_window = DateWindow(
@@ -55,7 +55,6 @@ env = Environment(
     output_dir = output_dir,
     forcing_timeseries_file_prefix = "basin_",
 )
-
 
 # River state loaded into csv files currently, placehodler variable
 history_length = 120 * Day(1)
@@ -82,6 +81,3 @@ JLD2.save(
     "river_states",
     river_states,
 )
-## load data with
-# Using ClimaRivers, JLD2
-# load("filepath")

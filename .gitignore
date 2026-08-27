@@ -25,3 +25,4 @@ Manifest.toml
 
 # Mini data set exception
 !mini_data/**/*.csv
+!shallow_data/**/*.csv
